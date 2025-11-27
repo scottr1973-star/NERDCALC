@@ -322,6 +322,9 @@
             <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="solve">
               Solve
             </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="programmer">
+              Programmer
+            </button>
           </div>
         </header>
 
@@ -613,6 +616,72 @@ f'(x₀) will appear here.</pre>
                   <div class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em]">Iterations</div>
                   <pre id="solveRootOutput" class="w-full h-full min-h-[4rem] p-2 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
 Iteration log and final root will appear here.</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Programmer tab -->
+          <div id="tab-programmer" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-fuchsia-400 shadow-[0_0_10px_rgba(232,121,249,0.9)]"></span>
+              Programmer / Bitwise Lab
+            </h3>
+            <p class="text-xs text-slate-300/80">
+              Base conversion and bitwise operations for low-level and systems work.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-2">
+                <h4 class="text-xs font-semibold text-sky-300">Base converter</h4>
+                <p class="text-[0.68rem] text-slate-400">
+                  Type in any base and all others stay in sync.
+                </p>
+                <div class="space-y-2">
+                  <div>
+                    <label class="block text-[0.7rem] text-slate-300/90">Decimal (base 10)</label>
+                    <input id="progDec" oninput="programmerSyncFrom('dec')" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="42" />
+                  </div>
+                  <div>
+                    <label class="block text-[0.7rem] text-slate-300/90">Binary (base 2)</label>
+                    <input id="progBin" oninput="programmerSyncFrom('bin')" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="101010" />
+                  </div>
+                  <div>
+                    <label class="block text-[0.7rem] text-slate-300/90">Hex (base 16)</label>
+                    <input id="progHex" oninput="programmerSyncFrom('hex')" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="2A" />
+                  </div>
+                  <div>
+                    <label class="block text-[0.7rem] text-slate-300/90">Octal (base 8)</label>
+                    <input id="progOct" oninput="programmerSyncFrom('oct')" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="52" />
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-xs font-semibold text-sky-300">Bitwise operations</h4>
+                <p class="text-[0.68rem] text-slate-400">
+                  Work with 32-bit integers. NOT uses A only; shifts use A by B.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[0.7rem] text-slate-300/90">Operand A (int)</label>
+                    <input id="progBitA" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="5" />
+                  </div>
+                  <div>
+                    <label class="block text-[0.7rem] text-slate-300/90">Operand B (int)</label>
+                    <input id="progBitB" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="3" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <button onclick="programmerRunBitwise('and')" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-[0.7rem]">&amp;</button>
+                  <button onclick="programmerRunBitwise('or')" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-[0.7rem]">|</button>
+                  <button onclick="programmerRunBitwise('xor')" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-[0.7rem]">XOR</button>
+                  <button onclick="programmerRunBitwise('not')" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-[0.7rem]">NOT A</button>
+                  <button onclick="programmerRunBitwise('shl')" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-[0.7rem]">A &lt;&lt; B</button>
+                  <button onclick="programmerRunBitwise('shr')" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-[0.7rem]">A &gt;&gt; B</button>
+                </div>
+                <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3">
+                  <h5 class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em] mb-1">Result</h5>
+                  <pre id="progBitResult" class="w-full min-h-[4rem] font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Enter A and B, then choose an operation.</pre>
                 </div>
               </div>
             </div>
@@ -1252,6 +1321,151 @@ Iteration log and final root will appear here.</pre>
         dataChart = null;
       }
       setStatus('Cleared data chart.');
+    }
+
+    // =========================
+    // Programmer (base + bitwise)
+    // =========================
+    function programmerSyncFrom(source) {
+      const decEl = document.getElementById('progDec');
+      const binEl = document.getElementById('progBin');
+      const hexEl = document.getElementById('progHex');
+      const octEl = document.getElementById('progOct');
+      if (!decEl || !binEl || !hexEl || !octEl) return;
+
+      let raw = '';
+      let radix = 10;
+
+      if (source === 'dec') {
+        raw = decEl.value;
+        radix = 10;
+      } else if (source === 'bin') {
+        raw = binEl.value;
+        radix = 2;
+      } else if (source === 'hex') {
+        raw = hexEl.value;
+        radix = 16;
+      } else if (source === 'oct') {
+        raw = octEl.value;
+        radix = 8;
+      } else {
+        return;
+      }
+
+      let text = (raw || '').trim();
+      if (!text) {
+        // If the active field is cleared, just clear the others.
+        if (source !== 'dec') decEl.value = '';
+        if (source !== 'bin') binEl.value = '';
+        if (source !== 'hex') hexEl.value = '';
+        if (source !== 'oct') octEl.value = '';
+        return;
+      }
+
+      // Strip common base prefixes so users can type 0b, 0x, 0o.
+      if (radix === 2) text = text.replace(/^0b/i, '');
+      if (radix === 16) text = text.replace(/^0x/i, '');
+      if (radix === 8) text = text.replace(/^0o/i, '');
+
+      const dec = parseInt(text, radix);
+      if (Number.isNaN(dec)) {
+        setStatus('Programmer: invalid ' + source.toUpperCase() + ' value.');
+        return;
+      }
+
+      decEl.value = dec.toString(10);
+      binEl.value = dec.toString(2);
+      hexEl.value = dec.toString(16).toUpperCase();
+      octEl.value = dec.toString(8);
+
+      setStatus('Programmer: base conversion updated from ' + source.toUpperCase() + '.');
+    }
+
+    function programmerRunBitwise(op) {
+      const aEl = document.getElementById('progBitA');
+      const bEl = document.getElementById('progBitB');
+      const outEl = document.getElementById('progBitResult');
+      if (!aEl || !bEl || !outEl) return;
+
+      const aText = (aEl.value || '').trim();
+      const bText = (bEl.value || '').trim();
+
+      if (!aText) {
+        outEl.textContent = 'Enter operand A.';
+        setStatus('Programmer: operand A required.');
+        return;
+      }
+
+      const a = parseInt(aText, 10);
+      if (Number.isNaN(a)) {
+        outEl.textContent = 'Operand A is not a valid integer.';
+        setStatus('Programmer: invalid operand A.');
+        return;
+      }
+
+      let b = 0;
+      if (op !== 'not') {
+        if (!bText) {
+          outEl.textContent = 'Enter operand B.';
+          setStatus('Programmer: operand B required.');
+          return;
+        }
+        b = parseInt(bText, 10);
+        if (Number.isNaN(b)) {
+          outEl.textContent = 'Operand B is not a valid integer.';
+          setStatus('Programmer: invalid operand B.');
+          return;
+        }
+      }
+
+      let result;
+      let label;
+      switch (op) {
+        case 'and':
+          result = a & b;
+          label = 'A AND B';
+          break;
+        case 'or':
+          result = a | b;
+          label = 'A OR B';
+          break;
+        case 'xor':
+          result = a ^ b;
+          label = 'A XOR B';
+          break;
+        case 'not':
+          result = ~a;
+          label = 'NOT A';
+          break;
+        case 'shl':
+          result = a << b;
+          label = 'A << B';
+          break;
+        case 'shr':
+          result = a >> b;
+          label = 'A >> B';
+          break;
+        default:
+          return;
+      }
+
+      // Display as signed decimal, plus 32-bit unsigned hex/bin.
+      const unsigned = result >>> 0;
+      const hex = '0x' + unsigned.toString(16).toUpperCase();
+      const bin = unsigned.toString(2);
+
+      const lines = [];
+      lines.push('Operation: ' + label);
+      lines.push('A (dec) = ' + a);
+      if (op !== 'not') {
+        lines.push('B (dec) = ' + b);
+      }
+      lines.push('Result (dec) = ' + result);
+      lines.push('Result (hex, 32-bit) = ' + hex);
+      lines.push('Result (bin, 32-bit) = ' + bin);
+
+      outEl.textContent = lines.join('\n');
+      setStatus('Programmer: ' + label + ' computed.');
     }
 
     // =========================
