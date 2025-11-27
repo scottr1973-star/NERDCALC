@@ -319,6 +319,9 @@
             <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="data">
               Data Viz
             </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="geometry">
+              Geometry
+            </button>
             <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="solve">
               Solve
             </button>
@@ -525,6 +528,92 @@ Cherries, 7"></textarea>
                 <div class="flex-1 min-h-[10rem] h-64 md:h-72 flex items-center justify-center">
                   <canvas id="dataCanvas"></canvas>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Geometry tab -->
+          <div id="tab-geometry" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.9)]"></span>
+              Geometry Lab (2D &amp; 3D)
+            </h3>
+            <p class="text-xs text-slate-300/80">
+              Compute area, perimeter, surface area, and volume for common shapes using clean numeric inputs.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <!-- 2D geometry -->
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 space-y-2">
+                <h4 class="text-xs font-semibold text-sky-300">2D shapes (area &amp; perimeter)</h4>
+                <div>
+                  <label class="block text-[0.7rem] text-slate-300/90">Shape</label>
+                  <select id="geom2dShape" onchange="updateGeom2DFields()" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80">
+                    <option value="circle">Circle (radius)</option>
+                    <option value="rectangle">Rectangle (width, height)</option>
+                    <option value="triangle-bh">Triangle (base &amp; height)</option>
+                    <option value="triangle-sss">Triangle (3 sides)</option>
+                    <option value="trapezoid">Trapezoid (bases &amp; height)</option>
+                    <option value="regular-polygon">Regular polygon (n, side)</option>
+                  </select>
+                </div>
+                <div id="geom2dP1Group">
+                  <label id="geom2dP1Label" class="block text-[0.7rem] text-slate-300/90">Parameter 1</label>
+                  <input id="geom2dP1" type="number" step="any" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                </div>
+                <div id="geom2dP2Group">
+                  <label id="geom2dP2Label" class="block text-[0.7rem] text-slate-300/90">Parameter 2</label>
+                  <input id="geom2dP2" type="number" step="any" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                </div>
+                <div id="geom2dP3Group">
+                  <label id="geom2dP3Label" class="block text-[0.7rem] text-slate-300/90">Parameter 3</label>
+                  <input id="geom2dP3" type="number" step="any" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="computeGeom2D()" class="calc-btn-main px-3 py-1.5 rounded-lg text-xs">
+                    Compute 2D
+                  </button>
+                  <button onclick="clearGeom2D()" class="calc-btn px-3 py-1.5 rounded-lg text-xs">
+                    Clear
+                  </button>
+                </div>
+                <pre id="geom2dOutput" class="w-full min-h-[4rem] mt-1 p-2 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Select a shape, fill parameters, then hit "Compute 2D".</pre>
+              </div>
+
+              <!-- 3D geometry -->
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 space-y-2">
+                <h4 class="text-xs font-semibold text-sky-300">3D solids (surface area &amp; volume)</h4>
+                <div>
+                  <label class="block text-[0.7rem] text-slate-300/90">Shape</label>
+                  <select id="geom3dShape" onchange="updateGeom3DFields()" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80">
+                    <option value="box">Box / Rectangular prism (w, h, d)</option>
+                    <option value="sphere">Sphere (radius)</option>
+                    <option value="cylinder">Cylinder (radius, height)</option>
+                    <option value="cone">Right cone (radius, height)</option>
+                  </select>
+                </div>
+                <div id="geom3dP1Group">
+                  <label id="geom3dP1Label" class="block text-[0.7rem] text-slate-300/90">Parameter 1</label>
+                  <input id="geom3dP1" type="number" step="any" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                </div>
+                <div id="geom3dP2Group">
+                  <label id="geom3dP2Label" class="block text-[0.7rem] text-slate-300/90">Parameter 2</label>
+                  <input id="geom3dP2" type="number" step="any" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                </div>
+                <div id="geom3dP3Group">
+                  <label id="geom3dP3Label" class="block text-[0.7rem] text-slate-300/90">Parameter 3</label>
+                  <input id="geom3dP3" type="number" step="any" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="computeGeom3D()" class="calc-btn-main px-3 py-1.5 rounded-lg text-xs">
+                    Compute 3D
+                  </button>
+                  <button onclick="clearGeom3D()" class="calc-btn px-3 py-1.5 rounded-lg text-xs">
+                    Clear
+                  </button>
+                </div>
+                <pre id="geom3dOutput" class="w-full min-h-[4rem] mt-1 p-2 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Select a solid, fill parameters, then hit "Compute 3D".</pre>
               </div>
             </div>
           </div>
@@ -921,6 +1010,10 @@ Enter A and B, then choose an operation.</pre>
           if (panel) panel.classList.remove('hidden');
         });
       });
+
+      // Initialize geometry field labels / visibility
+      updateGeom2DFields();
+      updateGeom3DFields();
     });
 
     // =========================
@@ -1321,6 +1414,307 @@ Enter A and B, then choose an operation.</pre>
         dataChart = null;
       }
       setStatus('Cleared data chart.');
+    }
+
+    // =========================
+    // Geometry (2D & 3D)
+    // =========================
+    function updateGeom2DFields() {
+      const shapeEl = document.getElementById('geom2dShape');
+      if (!shapeEl) return;
+      const shape = shapeEl.value;
+
+      const p1Group = document.getElementById('geom2dP1Group');
+      const p2Group = document.getElementById('geom2dP2Group');
+      const p3Group = document.getElementById('geom2dP3Group');
+      const p1Label = document.getElementById('geom2dP1Label');
+      const p2Label = document.getElementById('geom2dP2Label');
+      const p3Label = document.getElementById('geom2dP3Label');
+
+      if (!p1Group || !p2Group || !p3Group || !p1Label || !p2Label || !p3Label) return;
+
+      // Default: hide all, then enable per-shape
+      p1Group.classList.remove('hidden');
+      p2Group.classList.add('hidden');
+      p3Group.classList.add('hidden');
+
+      if (shape === 'circle') {
+        p1Label.textContent = 'Radius r';
+      } else if (shape === 'rectangle') {
+        p1Label.textContent = 'Width w';
+        p2Label.textContent = 'Height h';
+        p2Group.classList.remove('hidden');
+      } else if (shape === 'triangle-bh') {
+        p1Label.textContent = 'Base b';
+        p2Label.textContent = 'Height h';
+        p2Group.classList.remove('hidden');
+      } else if (shape === 'triangle-sss') {
+        p1Label.textContent = 'Side a';
+        p2Label.textContent = 'Side b';
+        p3Label.textContent = 'Side c';
+        p2Group.classList.remove('hidden');
+        p3Group.classList.remove('hidden');
+      } else if (shape === 'trapezoid') {
+        p1Label.textContent = 'Base a';
+        p2Label.textContent = 'Base b';
+        p3Label.textContent = 'Height h';
+        p2Group.classList.remove('hidden');
+        p3Group.classList.remove('hidden');
+      } else if (shape === 'regular-polygon') {
+        p1Label.textContent = 'Number of sides n';
+        p2Label.textContent = 'Side length s';
+        p2Group.classList.remove('hidden');
+      }
+    }
+
+    function computeGeom2D() {
+      const shapeEl = document.getElementById('geom2dShape');
+      const outEl = document.getElementById('geom2dOutput');
+      const p1El = document.getElementById('geom2dP1');
+      const p2El = document.getElementById('geom2dP2');
+      const p3El = document.getElementById('geom2dP3');
+      if (!shapeEl || !outEl || !p1El || !p2El || !p3El) return;
+
+      const shape = shapeEl.value;
+      const p1 = parseFloat(p1El.value);
+      const p2 = parseFloat(p2El.value);
+      const p3 = parseFloat(p3El.value);
+
+      function invalid(msg) {
+        outEl.textContent = msg;
+        setStatus('Geometry 2D: ' + msg);
+      }
+
+      let area = null;
+      let perimeter = null;
+      let extra = [];
+
+      if (shape === 'circle') {
+        if (!isFinite(p1) || p1 <= 0) return invalid('Radius must be a positive number.');
+        const r = p1;
+        area = Math.PI * r * r;
+        perimeter = 2 * Math.PI * r;
+        extra.push('r = ' + r);
+      } else if (shape === 'rectangle') {
+        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
+          return invalid('Width and height must be positive.');
+        }
+        const w = p1, h = p2;
+        area = w * h;
+        perimeter = 2 * (w + h);
+        extra.push('w = ' + w);
+        extra.push('h = ' + h);
+      } else if (shape === 'triangle-bh') {
+        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
+          return invalid('Base and height must be positive.');
+        }
+        const b = p1, h = p2;
+        area = 0.5 * b * h;
+        perimeter = null; // cannot determine from b & h alone
+        extra.push('b = ' + b);
+        extra.push('h = ' + h);
+      } else if (shape === 'triangle-sss') {
+        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
+          return invalid('All sides must be positive.');
+        }
+        const a = p1, b = p2, c = p3;
+        if (a + b <= c || a + c <= b || b + c <= a) {
+          return invalid('Triangle inequality violated (a + b > c, etc.).');
+        }
+        const s = (a + b + c) / 2;
+        area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
+        perimeter = a + b + c;
+        extra.push('a = ' + a);
+        extra.push('b = ' + b);
+        extra.push('c = ' + c);
+        extra.push('s (semiperimeter) = ' + s);
+      } else if (shape === 'trapezoid') {
+        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
+          return invalid('Bases and height must be positive.');
+        }
+        const a = p1, b = p2, h = p3;
+        area = 0.5 * (a + b) * h;
+        perimeter = null; // legs unknown
+        extra.push('base a = ' + a);
+        extra.push('base b = ' + b);
+        extra.push('h = ' + h);
+      } else if (shape === 'regular-polygon') {
+        if (!isFinite(p1) || !isFinite(p2) || p1 <= 2 || p2 <= 0) {
+          return invalid('n must be > 2 and side length > 0.');
+        }
+        const n = p1;
+        const s = p2;
+        const perimeterVal = n * s;
+        const areaVal = (n * s * s) / (4 * Math.tan(Math.PI / n));
+        area = areaVal;
+        perimeter = perimeterVal;
+        extra.push('n = ' + n);
+        extra.push('s = ' + s);
+      } else {
+        return invalid('Unknown shape.');
+      }
+
+      const lines = [];
+      lines.push('Shape: ' + shapeEl.options[shapeEl.selectedIndex].text);
+      if (extra.length) lines.push(extra.join(', '));
+
+      if (area != null) {
+        lines.push('Area ≈ ' + area);
+      }
+      if (perimeter != null) {
+        lines.push('Perimeter ≈ ' + perimeter);
+      } else {
+        lines.push('Perimeter: N/A for this parameterization.');
+      }
+
+      outEl.textContent = lines.join('\n');
+      setStatus('Geometry 2D: computed for ' + shape + '.');
+    }
+
+    function clearGeom2D() {
+      const p1El = document.getElementById('geom2dP1');
+      const p2El = document.getElementById('geom2dP2');
+      const p3El = document.getElementById('geom2dP3');
+      const outEl = document.getElementById('geom2dOutput');
+      if (p1El) p1El.value = '';
+      if (p2El) p2El.value = '';
+      if (p3El) p3El.value = '';
+      if (outEl) {
+        outEl.textContent = 'Select a shape, fill parameters, then hit "Compute 2D".';
+      }
+      setStatus('Geometry 2D: cleared.');
+    }
+
+    function updateGeom3DFields() {
+      const shapeEl = document.getElementById('geom3dShape');
+      if (!shapeEl) return;
+      const shape = shapeEl.value;
+
+      const p1Group = document.getElementById('geom3dP1Group');
+      const p2Group = document.getElementById('geom3dP2Group');
+      const p3Group = document.getElementById('geom3dP3Group');
+      const p1Label = document.getElementById('geom3dP1Label');
+      const p2Label = document.getElementById('geom3dP2Label');
+      const p3Label = document.getElementById('geom3dP3Label');
+
+      if (!p1Group || !p2Group || !p3Group || !p1Label || !p2Label || !p3Label) return;
+
+      p1Group.classList.remove('hidden');
+      p2Group.classList.add('hidden');
+      p3Group.classList.add('hidden');
+
+      if (shape === 'box') {
+        p1Label.textContent = 'Width w';
+        p2Label.textContent = 'Height h';
+        p3Label.textContent = 'Depth d';
+        p2Group.classList.remove('hidden');
+        p3Group.classList.remove('hidden');
+      } else if (shape === 'sphere') {
+        p1Label.textContent = 'Radius r';
+      } else if (shape === 'cylinder') {
+        p1Label.textContent = 'Radius r';
+        p2Label.textContent = 'Height h';
+        p2Group.classList.remove('hidden');
+      } else if (shape === 'cone') {
+        p1Label.textContent = 'Radius r';
+        p2Label.textContent = 'Height h';
+        p2Group.classList.remove('hidden');
+      }
+    }
+
+    function computeGeom3D() {
+      const shapeEl = document.getElementById('geom3dShape');
+      const outEl = document.getElementById('geom3dOutput');
+      const p1El = document.getElementById('geom3dP1');
+      const p2El = document.getElementById('geom3dP2');
+      const p3El = document.getElementById('geom3dP3');
+      if (!shapeEl || !outEl || !p1El || !p2El || !p3El) return;
+
+      const shape = shapeEl.value;
+      const p1 = parseFloat(p1El.value);
+      const p2 = parseFloat(p2El.value);
+      const p3 = parseFloat(p3El.value);
+
+      function invalid(msg) {
+        outEl.textContent = msg;
+        setStatus('Geometry 3D: ' + msg);
+      }
+
+      let surface = null;
+      let volume = null;
+      const extra = [];
+
+      if (shape === 'box') {
+        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
+          return invalid('Width, height, and depth must be positive.');
+        }
+        const w = p1, h = p2, d = p3;
+        surface = 2 * (w * h + w * d + h * d);
+        volume = w * h * d;
+        extra.push('w = ' + w);
+        extra.push('h = ' + h);
+        extra.push('d = ' + d);
+      } else if (shape === 'sphere') {
+        if (!isFinite(p1) || p1 <= 0) return invalid('Radius must be positive.');
+        const r = p1;
+        surface = 4 * Math.PI * r * r;
+        volume = (4 / 3) * Math.PI * r * r * r;
+        extra.push('r = ' + r);
+      } else if (shape === 'cylinder') {
+        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
+          return invalid('Radius and height must be positive.');
+        }
+        const r = p1, h = p2;
+        const baseArea = Math.PI * r * r;
+        const lateral = 2 * Math.PI * r * h;
+        surface = 2 * baseArea + lateral;
+        volume = baseArea * h;
+        extra.push('r = ' + r);
+        extra.push('h = ' + h);
+      } else if (shape === 'cone') {
+        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
+          return invalid('Radius and height must be positive.');
+        }
+        const r = p1, h = p2;
+        const slant = Math.sqrt(r * r + h * h);
+        const baseArea = Math.PI * r * r;
+        const lateral = Math.PI * r * slant;
+        surface = baseArea + lateral;
+        volume = (1 / 3) * baseArea * h;
+        extra.push('r = ' + r);
+        extra.push('h = ' + h);
+        extra.push('slant ≈ ' + slant);
+      } else {
+        return invalid('Unknown solid.');
+      }
+
+      const lines = [];
+      lines.push('Solid: ' + shapeEl.options[shapeEl.selectedIndex].text);
+      if (extra.length) lines.push(extra.join(', '));
+
+      if (surface != null) {
+        lines.push('Surface area ≈ ' + surface);
+      }
+      if (volume != null) {
+        lines.push('Volume ≈ ' + volume);
+      }
+
+      outEl.textContent = lines.join('\n');
+      setStatus('Geometry 3D: computed for ' + shape + '.');
+    }
+
+    function clearGeom3D() {
+      const p1El = document.getElementById('geom3dP1');
+      const p2El = document.getElementById('geom3dP2');
+      const p3El = document.getElementById('geom3dP3');
+      const outEl = document.getElementById('geom3dOutput');
+      if (p1El) p1El.value = '';
+      if (p2El) p2El.value = '';
+      if (p3El) p3El.value = '';
+      if (outEl) {
+        outEl.textContent = 'Select a solid, fill parameters, then hit "Compute 3D".';
+      }
+      setStatus('Geometry 3D: cleared.');
     }
 
     // =========================
