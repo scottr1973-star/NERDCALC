@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NerdLab Calc v2 · Ultimate Nerd Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['system-ui','-apple-system','SF Pro Text','Inter','sans-serif'],
+            mono: ['JetBrains Mono','SF Mono','ui-monospace','Menlo','monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js for graphing -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- math.js for hardcore math -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+      color: #e5e7eb;
+    }
+    .fc-card {
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.08), rgba(15,23,42,0.98));
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.4);
+      box-shadow:
+        0 24px 60px rgba(15,23,42,0.9),
+        0 0 32px rgba(59,130,246,0.28);
+      backdrop-filter: blur(24px);
+    }
+    .fc-card-soft {
+      background: radial-gradient(circle at top left, rgba(148,163,184,0.06), rgba(15,23,42,0.97));
+      border-radius: 1.25rem;
+      border: 1px solid rgba(51,65,85,0.9);
+      box-shadow:
+        0 18px 40px rgba(15,23,42,0.9),
+        0 0 24px rgba(59,130,246,0.18);
+      backdrop-filter: blur(20px);
+    }
+    .fc-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.95));
+      box-shadow: 0 12px 30px rgba(15,23,42,0.9);
+    }
+    .calc-btn-main {
+      background: radial-gradient(circle at top, #38bdf8, #2563eb 48%, #111827 100%);
+      border: 1px solid rgba(191,219,254,0.85);
+      box-shadow:
+        0 16px 36px rgba(15,23,42,1),
+        0 0 18px rgba(56,189,248,0.9);
+      color: #020617;
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, filter 0.08s ease-out;
+    }
+    .calc-btn-main:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+    .calc-btn-main:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow:
+        0 10px 20px rgba(15,23,42,1),
+        0 0 12px rgba(56,189,248,0.7);
+    }
+    .calc-btn {
+      background: radial-gradient(circle at top, #111827, #020617 60%, #020617 100%);
+      border: 1px solid rgba(30,64,175,0.9);
+      box-shadow: 0 12px 30px rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, filter 0.08s ease-out;
+    }
+    .calc-btn:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 36px rgba(15,23,42,1);
+    }
+    .calc-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 8px 18px rgba(15,23,42,1);
+    }
+    .tab-pill {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: all 0.16s ease-out;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 0.75rem;
+    }
+    .tab-pill-active {
+      border-color: rgba(96,165,250,0.9);
+      background: radial-gradient(circle at top, rgba(59,130,246,0.25), rgba(15,23,42,0.96));
+      box-shadow:
+        0 12px 30px rgba(15,23,42,1),
+        0 0 15px rgba(37,99,235,0.7);
+      color: #e5e7eb;
+    }
+    .tab-pill-inactive {
+      border-color: rgba(30,64,175,0.8);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.96), rgba(15,23,42,0.98));
+      color: #9ca3af;
+    }
+    .tab-pill-inactive:hover {
+      color: #e5e7eb;
+      border-color: rgba(59,130,246,0.8);
+      box-shadow: 0 10px 24px rgba(15,23,42,1);
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(75,85,99,0.8);
+      border-radius: 999px;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-slate-100 antialiased">
+  <div class="relative min-h-screen flex flex-col items-center px-3 py-4 md:px-6 md:py-8 overflow-x-hidden">
+    <!-- background orbs -->
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div class="absolute -top-40 -left-24 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl"></div>
+      <div class="absolute top-40 -right-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl"></div>
+      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 h-72 w-[32rem] rounded-full bg-sky-400/10 blur-3xl"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="w-full max-w-6xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-4">
+        <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-400 to-blue-700 shadow-lg shadow-sky-500/40 flex items-center justify-center">
+          <span class="font-mono font-bold text-xl text-slate-950">ƒ</span>
+        </div>
+        <div class="space-y-1">
+          <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">
+            NerdLab Calc v2
+          </h1>
+          <p class="text-xs md:text-sm text-slate-300/90">
+            Future-forward scientific lab for engineers, physicists, data nerds and code-nerds. Pure local math power.
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+        <div class="fc-pill px-3 py-1.5 flex items-center gap-2 text-xs md:text-sm">
+          <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
+          <span class="uppercase tracking-[0.16em] text-emerald-300/90 text-[0.68rem]">Core Engine</span>
+          <span class="font-semibold text-slate-100">math.js</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main layout -->
+    <main class="w-full max-w-6xl grid gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)] items-stretch">
+      <!-- Calculator panel -->
+      <section class="fc-card p-4 md:p-5 flex flex-col gap-4">
+        <header class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold tracking-[0.28em] uppercase text-slate-300/80">
+              Core Calculator
+            </h2>
+            <p class="text-xs text-slate-300/80">
+              High-precision expression engine with memory and trig modes.
+            </p>
+          </div>
+          <div class="flex flex-col items-end gap-1 text-[0.7rem] font-mono">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-950/80 border border-slate-600/80 tracking-[0.12em] uppercase">
+              <span class="inline-flex h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.9)]"></span>
+              <span id="angle-mode-pill">Angle: RAD</span>
+            </div>
+            <div class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-slate-950/80 border border-slate-600/80 uppercase">
+              <span class="text-slate-400">Base:</span>
+              <span id="base-mode-pill" class="text-slate-100">DEC</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Display -->
+        <div class="rounded-2xl border border-slate-600/80 bg-slate-950/80 px-4 py-3 flex flex-col gap-1 shadow-inner shadow-slate-900/80">
+          <div class="flex items-center justify-between text-[0.65rem] font-mono text-slate-400">
+            <span id="status-line" class="truncate">Ready.</span>
+            <span class="flex items-center gap-2">
+              <span class="flex items-center gap-1"><span class="text-slate-500">mem</span><span id="memory-indicator" class="text-emerald-400/80">0</span></span>
+              <span class="flex items-center gap-1"><span class="text-slate-500">ans</span><span id="ans-indicator" class="text-sky-300/90">0</span></span>
+            </span>
+          </div>
+          <div class="flex flex-col items-end text-right">
+            <div id="expression-display" class="w-full min-h-[1.25rem] font-mono text-xs text-slate-300/90 break-words"></div>
+            <div id="main-display" class="w-full text-3xl md:text-4xl font-mono font-light text-slate-50 tracking-tight leading-tight overflow-x-auto scrollbar-thin">
+              0
+            </div>
+          </div>
+        </div>
+
+        <!-- Keypads -->
+        <div class="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-3 mt-2">
+          <!-- Primary keypad -->
+          <div class="grid grid-rows-[auto_1fr] gap-2">
+            <div class="grid grid-cols-4 gap-1.5 text-xs">
+              <button data-key="mode-deg" class="calc-btn px-2 py-1.5 rounded-lg font-mono">DEG</button>
+              <button data-key="mode-rad" class="calc-btn px-2 py-1.5 rounded-lg font-mono opacity-70">RAD</button>
+              <button data-key="mode-clear" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-rose-200">AC</button>
+              <button data-key="mode-del" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-amber-200">DEL</button>
+            </div>
+            <div class="grid grid-cols-4 grid-rows-5 gap-1.5 text-base md:text-lg">
+              <button data-key="7" class="calc-btn rounded-xl py-3">7</button>
+              <button data-key="8" class="calc-btn rounded-xl py-3">8</button>
+              <button data-key="9" class="calc-btn rounded-xl py-3">9</button>
+              <button data-op="÷" class="calc-btn rounded-xl py-3 text-sky-300">÷</button>
+
+              <button data-key="4" class="calc-btn rounded-xl py-3">4</button>
+              <button data-key="5" class="calc-btn rounded-xl py-3">5</button>
+              <button data-key="6" class="calc-btn rounded-xl py-3">6</button>
+              <button data-op="×" class="calc-btn rounded-xl py-3 text-sky-300">×</button>
+
+              <button data-key="1" class="calc-btn rounded-xl py-3">1</button>
+              <button data-key="2" class="calc-btn rounded-xl py-3">2</button>
+              <button data-key="3" class="calc-btn rounded-xl py-3">3</button>
+              <button data-op="-" class="calc-btn rounded-xl py-3 text-sky-300">−</button>
+
+              <button data-key="0" class="calc-btn rounded-xl py-3 col-span-2">0</button>
+              <button data-key="." class="calc-btn rounded-xl py-3">.</button>
+              <button data-op="+" class="calc-btn rounded-xl py-3 text-sky-300">+</button>
+
+              <button data-key="(" class="calc-btn rounded-xl py-3 text-slate-200">(</button>
+              <button data-key=")" class="calc-btn rounded-xl py-3 text-slate-200">)</button>
+              <button data-op="^" class="calc-btn rounded-xl py-3 text-sky-300">xʸ</button>
+              <button data-eval="=" class="calc-btn-main rounded-xl py-3 text-lg font-semibold flex items-center justify-center gap-1">
+                <span>=</span>
+                <span class="text-[0.65rem] font-mono text-slate-900/80">ENTER</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sci / memory keypad -->
+          <div class="grid grid-rows-[auto_1fr] gap-2 text-xs">
+            <div class="grid grid-cols-4 gap-1.5">
+              <button data-mem="mc" class="calc-btn rounded-lg px-2 py-1.5 font-mono">MC</button>
+              <button data-mem="mr" class="calc-btn rounded-lg px-2 py-1.5 font-mono">MR</button>
+              <button data-mem="mplus" class="calc-btn rounded-lg px-2 py-1.5 font-mono">M+</button>
+              <button data-mem="mminus" class="calc-btn rounded-lg px-2 py-1.5 font-mono">M−</button>
+            </div>
+            <div class="grid grid-cols-3 grid-rows-4 gap-1.5 text-[0.8rem] md:text-xs">
+              <button data-func="pi" class="calc-btn rounded-xl py-2.5 font-mono">π</button>
+              <button data-func="e" class="calc-btn rounded-xl py-2.5 font-mono">e</button>
+              <button data-func="rand" class="calc-btn rounded-xl py-2.5 font-mono">rand()</button>
+
+              <button data-func="sqrt" class="calc-btn rounded-xl py-2.5 font-mono">√x</button>
+              <button data-func="square" class="calc-btn rounded-xl py-2.5 font-mono">x²</button>
+              <button data-func="inv" class="calc-btn rounded-xl py-2.5 font-mono">1/x</button>
+
+              <button data-func="sin" class="calc-btn rounded-xl py-2.5 font-mono">sin</button>
+              <button data-func="cos" class="calc-btn rounded-xl py-2.5 font-mono">cos</button>
+              <button data-func="tan" class="calc-btn rounded-xl py-2.5 font-mono">tan</button>
+
+              <button data-func="ln" class="calc-btn rounded-xl py-2.5 font-mono">ln</button>
+              <button data-func="log10" class="calc-btn rounded-xl py-2.5 font-mono">log₁₀</button>
+              <button data-func="abs" class="calc-btn rounded-xl py-2.5 font-mono">|x|</button>
+
+              <button data-func="sign" class="calc-btn rounded-xl py-2.5 font-mono">±</button>
+              <button data-func="factorial" class="calc-btn rounded-xl py-2.5 font-mono">x!</button>
+              <button data-func="ans" class="calc-btn rounded-xl py-2.5 font-mono">ans</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Workbench / Tabs -->
+      <section class="fc-card-soft p-4 md:p-5 flex flex-col gap-3">
+        <header class="flex flex-col gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold tracking-[0.28em] uppercase text-slate-300/80">
+                Workbench
+              </h2>
+              <p class="text-xs text-slate-300/80">
+                Console, plotting, matrices, stats and data viz in one place.
+              </p>
+            </div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-600/80 bg-slate-950/80 text-[0.7rem] font-mono">
+              <span class="text-slate-400">Scope:</span>
+              <span class="text-sky-300" id="scope-indicator">ans, mem, vars</span>
+            </div>
+          </div>
+
+          <div class="flex border border-slate-700/80 rounded-full bg-slate-950/80 p-1 overflow-x-auto scrollbar-thin">
+            <button class="tab-pill tab-pill-active px-3 py-1.5" data-tab-target="console">
+              Console
+            </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="graph">
+              Graph
+            </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="matrix">
+              Matrices
+            </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="stats">
+              Stats
+            </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="data">
+              Data Viz
+            </button>
+            <button class="tab-pill tab-pill-inactive px-3 py-1.5" data-tab-target="solve">
+              Solve
+            </button>
+          </div>
+        </header>
+
+        <div class="flex-1 min-h-0">
+          <!-- Console tab -->
+          <div id="tab-console" class="space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.9)]"></span>
+              math.js Console / REPL
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-xs font-medium text-slate-300/90">Expressions (one per line)</label>
+                <textarea id="consoleInput" class="w-full h-40 md:h-48 p-3 rounded-xl bg-slate-950/80 border border-slate-700/80 font-mono text-xs md:text-sm text-slate-100 outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500/80 scrollbar-thin" placeholder="2+2
+sin(pi/4)^2 + cos(pi/4)^2
+a = 5
+b = 3
+a^b
+sqrt(-1)
+det([[1,2],[3,4]])"></textarea>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="runConsole()" class="calc-btn-main px-3 py-1.5 rounded-lg text-xs md:text-sm flex items-center gap-1">
+                    <span>Run</span>
+                    <span class="text-[0.65rem] font-mono text-slate-900/80">Shift+Enter</span>
+                  </button>
+                  <button onclick="clearConsole()" class="calc-btn px-3 py-1.5 rounded-lg text-xs md:text-sm">
+                    Clear
+                  </button>
+                  <button onclick="loadExprIntoConsole()" class="calc-btn px-3 py-1.5 rounded-lg text-xs md:text-sm">
+                    Use current expression
+                  </button>
+                </div>
+                <p class="text-[0.68rem] text-slate-400">
+                  Scope includes <code class="font-mono text-emerald-300">ans</code>,
+                  <code class="font-mono text-emerald-300">mem</code> and anything you define.
+                </p>
+              </div>
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 flex flex-col h-full">
+                <h4 class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em] border-b border-slate-700/80 pb-1 mb-2">
+                  Console Output
+                </h4>
+                <pre id="consoleOutput" class="flex-1 font-mono text-xs md:text-sm text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Enter an expression and hit Run.</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graph tab -->
+          <div id="tab-graph" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.9)]"></span>
+              Function Graphing
+            </h3>
+            <div class="space-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-3">
+                <div class="space-y-2">
+                  <label class="block text-xs font-medium text-slate-300/90">f(x)</label>
+                  <input id="graphExpr" class="w-full px-3 py-2 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-xs md:text-sm outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="sin(x) / x" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs text-slate-400">x min</label>
+                    <input id="graphXMin" type="number" value="-10" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-xs outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400">x max</label>
+                    <input id="graphXMax" type="number" value="10" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-xs outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="plotGraph()" class="calc-btn-main px-3 py-1.5 rounded-lg text-xs md:text-sm">
+                  Plot
+                </button>
+                <button onclick="resetGraph()" class="calc-btn px-3 py-1.5 rounded-lg text-xs md:text-sm">
+                  Reset
+                </button>
+                <button onclick="loadExprIntoGraph()" class="calc-btn px-3 py-1.5 rounded-lg text-xs md:text-sm">
+                  Use current expression
+                </button>
+              </div>
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 h-64 md:h-72 flex items-center justify-center">
+                <canvas id="graphCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matrix tab -->
+          <div id="tab-matrix" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.9)]"></span>
+              Matrix Lab (v1)
+            </h3>
+            <p class="text-xs text-slate-300/80">
+              Input small matrices and compute determinants, inverses, and products. Easy to expand later.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-2">
+                <label class="block text-xs text-slate-300/90">Matrix A (rows separated by newlines, values by space or comma)</label>
+                <textarea id="matrixA" class="w-full h-32 p-2 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.7rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80 scrollbar-thin" placeholder="1 2
+3 4"></textarea>
+                <label class="block text-xs text-slate-300/90">Matrix B (optional)</label>
+                <textarea id="matrixB" class="w-full h-32 p-2 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.7rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80 scrollbar-thin" placeholder="5 6
+7 8"></textarea>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="matrixDet()" class="calc-btn px-3 py-1.5 rounded-lg">det(A)</button>
+                  <button onclick="matrixInv()" class="calc-btn px-3 py-1.5 rounded-lg">inv(A)</button>
+                  <button onclick="matrixMul()" class="calc-btn px-3 py-1.5 rounded-lg">A × B</button>
+                </div>
+              </div>
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 flex flex-col">
+                <h4 class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em] border-b border-slate-700/80 pb-1 mb-2">
+                  Matrix Output
+                </h4>
+                <pre id="matrixOutput" class="flex-1 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Paste matrices and choose an operation.</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats tab -->
+          <div id="tab-stats" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.9)]"></span>
+              Stats &amp; Data (v1)
+            </h3>
+            <p class="text-xs text-slate-300/80">
+              Quick descriptive statistics for a single series. Easy to grow into regression and distributions.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-2">
+                <label class="block text-xs text-slate-300/90">Data points (numbers separated by comma or whitespace)</label>
+                <textarea id="statsData" class="w-full h-32 p-2 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.7rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80 scrollbar-thin" placeholder="1, 2, 3, 4, 5"></textarea>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="computeStats()" class="calc-btn px-3 py-1.5 rounded-lg">Compute stats</button>
+                  <button onclick="clearStats()" class="calc-btn px-3 py-1.5 rounded-lg">Clear</button>
+                </div>
+              </div>
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 flex flex-col">
+                <h4 class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em] border-b border-slate-700/80 pb-1 mb-2">
+                  Stats Output
+                </h4>
+                <pre id="statsOutput" class="flex-1 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Paste data and hit "Compute stats".</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Viz tab -->
+          <div id="tab-data" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]"></span>
+              Data Visualization (bar, line, pie, more)
+            </h3>
+            <p class="text-xs text-slate-300/80">
+              Paste label/value pairs and render them as bar charts, line charts, pies, doughnuts, radar, or polar area.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)] gap-4 text-xs">
+              <div class="space-y-2">
+                <label class="block text-xs text-slate-300/90">
+                  Data (one item per line: <span class="font-mono">label, value</span>)
+                </label>
+                <textarea id="dataInput" class="w-full h-32 p-2 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.7rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80 scrollbar-thin" placeholder="Apples, 10
+Bananas, 15
+Cherries, 7"></textarea>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs text-slate-300/90">Chart type</label>
+                    <select id="dataChartType" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.7rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80">
+                      <option value="bar">Bar</option>
+                      <option value="line">Line</option>
+                      <option value="pie">Pie</option>
+                      <option value="doughnut">Doughnut</option>
+                      <option value="radar">Radar</option>
+                      <option value="polarArea">Polar area</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="block text-xs text-slate-300/90">Options</label>
+                    <div class="flex flex-wrap gap-2">
+                      <button onclick="plotDataChart()" class="calc-btn-main px-3 py-1.5 rounded-lg">
+                        Plot
+                      </button>
+                      <button onclick="clearDataChart()" class="calc-btn px-3 py-1.5 rounded-lg">
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-[0.68rem] text-slate-400">
+                  Tip: You can use the Stats tab to understand a series, then aggregate and visualize here.
+                </p>
+              </div>
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 flex flex-col">
+                <h4 class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em] border-b border-slate-700/80 pb-1 mb-2">
+                  Chart
+                </h4>
+                <div class="flex-1 min-h-[10rem] h-64 md:h-72 flex items-center justify-center">
+                  <canvas id="dataCanvas"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Solve tab -->
+          <div id="tab-solve" class="hidden space-y-3">
+            <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.9)]"></span>
+              Solve (derivatives, integrals, roots)
+            </h3>
+            <p class="text-xs text-slate-300/80">
+              Numeric tools for calculus and equation solving. Uses the same math.js engine as the main calculator.
+            </p>
+            <div class="space-y-3 text-xs">
+              <!-- Derivative -->
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3">
+                <div class="space-y-2">
+                  <h4 class="text-xs font-semibold text-sky-300">Derivative at a point</h4>
+                  <label class="block text-xs text-slate-300/90">f(x)</label>
+                  <input id="solveDerivExpr" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="sin(x) * x^2" />
+                  <label class="block text-xs text-slate-300/90">x₀</label>
+                  <input id="solveDerivX0" type="number" value="0" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                  <div class="flex flex-wrap gap-2">
+                    <button onclick="solveDerivative()" class="calc-btn-main px-3 py-1.5 rounded-lg">
+                      Compute derivative
+                    </button>
+                    <button onclick="loadExprIntoDeriv()" class="calc-btn px-3 py-1.5 rounded-lg">
+                      Use current expression
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em]">Result</div>
+                  <pre id="solveDerivOutput" class="w-full h-full min-h-[4rem] p-2 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+f'(x₀) will appear here.</pre>
+                </div>
+              </div>
+
+              <!-- Integral -->
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3">
+                <div class="space-y-2">
+                  <h4 class="text-xs font-semibold text-sky-300">Definite integral</h4>
+                  <label class="block text-xs text-slate-300/90">f(x)</label>
+                  <input id="solveIntExpr" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="exp(-x^2)" />
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="block text-xs text-slate-300/90">Lower bound (a)</label>
+                      <input id="solveIntA" type="number" value="0" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-300/90">Upper bound (b)</label>
+                      <input id="solveIntB" type="number" value="1" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button onclick="solveIntegral()" class="calc-btn-main px-3 py-1.5 rounded-lg">
+                      Compute integral
+                    </button>
+                    <button onclick="loadExprIntoIntegral()" class="calc-btn px-3 py-1.5 rounded-lg">
+                      Use current expression
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em]">Result</div>
+                  <pre id="solveIntOutput" class="w-full h-full min-h-[4rem] p-2 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+∫ f(x) dx over [a, b] will appear here.</pre>
+                </div>
+              </div>
+
+              <!-- Root finding -->
+              <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3">
+                <div class="space-y-2">
+                  <h4 class="text-xs font-semibold text-sky-300">Root finding (solve f(x) = 0)</h4>
+                  <label class="block text-xs text-slate-300/90">f(x)</label>
+                  <input id="solveRootExpr" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="x^3 - x - 2" />
+                  <label class="block text-xs text-slate-300/90">Initial guess x₀</label>
+                  <input id="solveRootGuess" type="number" value="1" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" />
+                  <div class="flex flex-wrap gap-2">
+                    <button onclick="solveRoot()" class="calc-btn-main px-3 py-1.5 rounded-lg">
+                      Find root
+                    </button>
+                    <button onclick="loadExprIntoRoot()" class="calc-btn px-3 py-1.5 rounded-lg">
+                      Use current expression
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[0.7rem] text-slate-400 uppercase tracking-[0.16em]">Iterations</div>
+                  <pre id="solveRootOutput" class="w-full h-full min-h-[4rem] p-2 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] text-emerald-300 whitespace-pre-wrap overflow-y-auto scrollbar-thin">
+Iteration log and final root will appear here.</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="w-full max-w-6xl mt-4 text-[0.65rem] text-slate-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+      <span>NerdLab Calc v2 · Pure local super calculator (no AI).</span>
+      <span>Math: <span class="text-emerald-300">math.js</span> · Graphs: <span class="text-sky-300">Chart.js</span>.</span>
+    </footer>
+  </div>
+
+  <!-- App logic -->
+  <script>
+    // =========================
+    // Global state
+    // =========================
+    let expression = "";
+    let display = "0";
+    let ans = 0;
+    let memory = 0;
+    let angleMode = "RAD"; // RAD or DEG
+    let baseMode = "DEC";  // future: HEX/BIN
+
+    // DOM refs (assigned after DOMContentLoaded)
+    let exprEl, mainEl, statusEl, memEl, ansEl, anglePillEl, basePillEl;
+
+    function safeParseFloat(val) {
+      const n = parseFloat(val);
+      if (Number.isNaN(n)) return 0;
+      return n;
+    }
+
+    function updateDisplay() {
+      if (!exprEl || !mainEl || !memEl || !ansEl || !anglePillEl || !basePillEl) return;
+      exprEl.textContent = expression;
+      mainEl.textContent = display;
+      memEl.textContent = memory.toString();
+      ansEl.textContent = ans.toString();
+      anglePillEl.textContent = "Angle: " + angleMode;
+      basePillEl.textContent = baseMode;
+    }
+
+    function setStatus(msg) {
+      if (!statusEl) return;
+      statusEl.textContent = msg;
+    }
+
+    function clearAll() {
+      expression = "";
+      display = "0";
+      setStatus("Cleared.");
+      updateDisplay();
+    }
+
+    function backspace() {
+      if (!expression) return;
+      expression = expression.slice(0, -1);
+      display = expression || "0";
+      updateDisplay();
+    }
+
+    function pushKey(key) {
+      expression += key;
+      display = expression;
+      updateDisplay();
+    }
+
+    function pushOp(op) {
+      if (op === "×") expression += "*";
+      else if (op === "÷") expression += "/";
+      else expression += op;
+      display = expression;
+      updateDisplay();
+    }
+
+    function pushFunc(name) {
+      if (name === "pi") {
+        expression += "pi";
+      } else if (name === "e") {
+        expression += "e";
+      } else if (name === "rand") {
+        expression += "random()";
+      } else if (name === "sqrt") {
+        expression += "sqrt(";
+      } else if (name === "square") {
+        expression += "(" + (expression || "ans") + ")^2";
+      } else if (name === "inv") {
+        expression = "1/(" + (expression || "ans") + ")";
+      } else if (name === "sin" || name === "cos" || name === "tan") {
+        const base = (angleMode === "DEG") ? name + "d" : name;
+        expression += base + "(";
+      } else if (name === "ln") {
+        expression += "log(";
+      } else if (name === "log10") {
+        expression += "log10(";
+      } else if (name === "abs") {
+        expression += "abs(";
+      } else if (name === "sign") {
+        if (expression) expression = "-(" + expression + ")";
+        else expression = "-(" + ans + ")";
+      } else if (name === "factorial") {
+        expression = "(" + (expression || "ans") + ")!";
+      } else if (name === "ans") {
+        expression += "ans";
+      }
+      display = expression;
+      updateDisplay();
+    }
+
+    function toggleAngle(mode) {
+      angleMode = mode;
+      setStatus("Angle mode: " + mode);
+      updateDisplay();
+    }
+
+    function memoryOp(op) {
+      if (op === "mc") {
+        memory = 0;
+      } else if (op === "mr") {
+        expression += memory.toString();
+      } else if (op === "mplus") {
+        memory += safeParseFloat(display);
+      } else if (op === "mminus") {
+        memory -= safeParseFloat(display);
+      }
+      updateDisplay();
+    }
+
+    // math.js config + sind/cosd/tand
+    if (typeof math !== "undefined") {
+      math.config({ number: 'number', precision: 16 });
+      math.import({
+        sind: x => math.sin(x * math.pi / 180),
+        cosd: x => math.cos(x * math.pi / 180),
+        tand: x => math.tan(x * math.pi / 180),
+      }, { override: true });
+    }
+
+    // =========================
+    // DOM wiring
+    // =========================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Cache DOM elements
+      exprEl = document.getElementById('expression-display');
+      mainEl = document.getElementById('main-display');
+      statusEl = document.getElementById('status-line');
+      memEl = document.getElementById('memory-indicator');
+      ansEl = document.getElementById('ans-indicator');
+      anglePillEl = document.getElementById('angle-mode-pill');
+      basePillEl = document.getElementById('base-mode-pill');
+
+      updateDisplay();
+      setStatus("Ready.");
+
+      // Keypads
+      document.querySelectorAll('[data-key]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const k = btn.getAttribute('data-key');
+          if (k === 'mode-deg') toggleAngle('DEG');
+          else if (k === 'mode-rad') toggleAngle('RAD');
+          else if (k === 'mode-clear') clearAll();
+          else if (k === 'mode-del') backspace();
+          else pushKey(k);
+        });
+      });
+
+      document.querySelectorAll('[data-op]').forEach(btn => {
+        btn.addEventListener('click', () => pushOp(btn.getAttribute('data-op')));
+      });
+
+      document.querySelectorAll('[data-func]').forEach(btn => {
+        btn.addEventListener('click', () => pushFunc(btn.getAttribute('data-func')));
+      });
+
+      document.querySelectorAll('[data-mem]').forEach(btn => {
+        btn.addEventListener('click', () => memoryOp(btn.getAttribute('data-mem')));
+      });
+
+      const evalBtn = document.querySelector('[data-eval="="]');
+      if (evalBtn) {
+        evalBtn.addEventListener('click', evaluateExpression);
+      }
+
+      // === Keyboard handling ===
+      document.addEventListener('keydown', (e) => {
+        const tag = e.target.tagName.toLowerCase();
+        const isEditable =
+          tag === 'input' ||
+          tag === 'textarea' ||
+          e.target.isContentEditable;
+
+        // If typing in an input/textarea, let normal behavior happen,
+        // except: Shift+Enter in console should run the console.
+        if (isEditable) {
+          if (e.target.id === 'consoleInput' && e.key === 'Enter' && e.shiftKey) {
+            e.preventDefault();
+            runConsole();
+          }
+          return;
+        }
+
+        // Outside of editable fields → route keys to main calculator
+        const key = e.key;
+        if ((key >= '0' && key <= '9') || key === '.' || key === '(' || key === ')') {
+          pushKey(key);
+        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+          pushKey(key);
+        } else if (key === 'Enter') {
+          e.preventDefault();
+          evaluateExpression();
+        } else if (key === 'Backspace') {
+          e.preventDefault();
+          backspace();
+        } else if (key === 'Escape') {
+          clearAll();
+        }
+      });
+
+      // Tabs
+      document.querySelectorAll('[data-tab-target]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-tab-target');
+          document.querySelectorAll('[data-tab-target]').forEach(b => {
+            b.classList.remove('tab-pill-active', 'tab-pill-inactive');
+            b.classList.add('tab-pill-inactive');
+          });
+          btn.classList.remove('tab-pill-inactive');
+          btn.classList.add('tab-pill-active');
+
+          document.querySelectorAll('[id^="tab-"]').forEach(panel => {
+            panel.classList.add('hidden');
+          });
+          const panel = document.getElementById('tab-' + target);
+          if (panel) panel.classList.remove('hidden');
+        });
+      });
+    });
+
+    // =========================
+    // Core evaluation
+    // =========================
+    function evaluateExpression() {
+      if (!expression.trim()) {
+        setStatus("Nothing to evaluate.");
+        return;
+      }
+      try {
+        const scope = { ans, memory, mem: memory, pi: Math.PI, e: Math.E };
+        const result = math.evaluate(expression, scope);
+        if (typeof result === "number") {
+          ans = result;
+          display = (Math.abs(result) < 1e-9 ? "0" : result.toString());
+        } else {
+          display = result.toString();
+        }
+        setStatus("OK.");
+        updateDisplay();
+      } catch (err) {
+        setStatus("Error: " + err.message);
+      }
+    }
+
+    // =========================
+    // Console
+    // =========================
+    function formatConsoleResult(val) {
+      try {
+        if (typeof val === 'number') {
+          if (!isFinite(val)) return val.toString();
+          if (Math.abs(val) < 1e-4 || Math.abs(val) >= 1e6) {
+            return val.toExponential(8);
+          }
+          return parseFloat(val.toPrecision(12)).toString();
+        }
+        if (typeof math !== 'undefined' && math.typeOf) {
+          const t = math.typeOf(val);
+          if (['Complex','Fraction','BigNumber','Matrix'].includes(t)) {
+            return val.toString();
+          }
+        }
+        if (Array.isArray(val)) return JSON.stringify(val, null, 2);
+        return String(val);
+      } catch (e) {
+        return String(val);
+      }
+    }
+
+    function runConsole() {
+      const inputEl = document.getElementById('consoleInput');
+      const outEl = document.getElementById('consoleOutput');
+      if (!inputEl || !outEl) return;
+
+      const text = inputEl.value;
+      if (!text.trim()) {
+        outEl.textContent = 'No input.';
+        return;
+      }
+
+      const scope = { ans: safeParseFloat(display), mem: memory, memory };
+      const lines = text.split('\n').filter(line => line.trim().length > 0);
+      const results = [];
+      try {
+        for (const line of lines) {
+          const expr = line.trim();
+          const value = math.evaluate(expr, scope);
+          results.push('> ' + expr + '\n' + formatConsoleResult(value));
+        }
+        outEl.textContent = results.join('\n\n');
+      } catch (err) {
+        outEl.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    function clearConsole() {
+      const inputEl = document.getElementById('consoleInput');
+      const outEl = document.getElementById('consoleOutput');
+      if (inputEl) inputEl.value = '';
+      if (outEl) outEl.textContent = 'Enter an expression and hit Run.';
+    }
+
+    function loadExprIntoConsole() {
+      const inputEl = document.getElementById('consoleInput');
+      if (inputEl) {
+        const expr = expression || display || "0";
+        inputEl.value = expr;
+      }
+    }
+
+    // =========================
+    // Graphing
+    // =========================
+    let graphChart = null;
+
+    function buildGraphPoints(expr, xmin, xmax, steps) {
+      const xs = [];
+      const ys = [];
+      const step = (xmax - xmin) / steps;
+      for (let i = 0; i <= steps; i++) {
+        const x = xmin + i * step;
+        let y;
+        try {
+          y = math.evaluate(expr, { x, ans, mem: memory, memory });
+        } catch (e) {
+          y = NaN;
+        }
+        xs.push(x);
+        ys.push(typeof y === 'number' && isFinite(y) ? y : NaN);
+      }
+      return { xs, ys };
+    }
+
+    function plotGraph() {
+      const exprInput = document.getElementById('graphExpr');
+      const xminEl = document.getElementById('graphXMin');
+      const xmaxEl = document.getElementById('graphXMax');
+      if (!exprInput || !xminEl || !xmaxEl) return;
+
+      const exprVal = exprInput.value.trim();
+      if (!exprVal) {
+        setStatus('No graph expression.');
+        return;
+      }
+
+      const xmin = parseFloat(xminEl.value);
+      const xmax = parseFloat(xmaxEl.value);
+      if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) {
+        setStatus('Invalid x range.');
+        return;
+      }
+
+      const { xs, ys } = buildGraphPoints(exprVal, xmin, xmax, 400);
+      const canvas = document.getElementById('graphCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      if (graphChart) graphChart.destroy();
+
+      graphChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: xs,
+          datasets: [{
+            label: 'f(x) = ' + exprVal,
+            data: ys,
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              ticks: { color: '#9ca3af' },
+              grid: { color: 'rgba(55,65,81,0.4)' }
+            },
+            y: {
+              ticks: { color: '#9ca3af' },
+              grid: { color: 'rgba(55,65,81,0.4)' }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#e5e7eb' }
+            }
+          }
+        }
+      });
+
+      setStatus('Plotted f(x).');
+    }
+
+    function resetGraph() {
+      const exprInput = document.getElementById('graphExpr');
+      const xminEl = document.getElementById('graphXMin');
+      const xmaxEl = document.getElementById('graphXMax');
+      if (exprInput) exprInput.value = '';
+      if (xminEl) xminEl.value = '-10';
+      if (xmaxEl) xmaxEl.value = '10';
+      if (graphChart) {
+        graphChart.destroy();
+        graphChart = null;
+      }
+      setStatus('Graph reset.');
+    }
+
+    function loadExprIntoGraph() {
+      const exprInput = document.getElementById('graphExpr');
+      if (exprInput) {
+        const exprVal = expression || display || "0";
+        exprInput.value = exprVal;
+      }
+    }
+
+    // =========================
+    // Matrix Lab
+    // =========================
+    function parseMatrix(text) {
+      const rows = text.split('\n').map(r => r.trim()).filter(r => r.length > 0);
+      if (!rows.length) return null;
+      const matrix = rows.map(row =>
+        row.split(/[, \t]+/).map(x => parseFloat(x)).filter(v => !Number.isNaN(v))
+      );
+      return math.matrix(matrix);
+    }
+
+    function formatMatrix(m) {
+      try {
+        if (math.typeOf(m) === 'Matrix') return m.toString();
+        return String(m);
+      } catch (e) {
+        return String(m);
+      }
+    }
+
+    function matrixDet() {
+      const aText = document.getElementById('matrixA').value;
+      const out = document.getElementById('matrixOutput');
+      try {
+        const A = parseMatrix(aText);
+        if (!A) {
+          out.textContent = 'No matrix A.';
+          return;
+        }
+        const d = math.det(A);
+        out.textContent = 'det(A) = ' + d.toString();
+      } catch (e) {
+        out.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function matrixInv() {
+      const aText = document.getElementById('matrixA').value;
+      const out = document.getElementById('matrixOutput');
+      try {
+        const A = parseMatrix(aText);
+        if (!A) {
+          out.textContent = 'No matrix A.';
+          return;
+        }
+        const inv = math.inv(A);
+        out.textContent = 'inv(A) =\n' + formatMatrix(inv);
+      } catch (e) {
+        out.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function matrixMul() {
+      const aText = document.getElementById('matrixA').value;
+      const bText = document.getElementById('matrixB').value;
+      const out = document.getElementById('matrixOutput');
+      try {
+        const A = parseMatrix(aText);
+        const B = parseMatrix(bText);
+        if (!A || !B) {
+          out.textContent = 'Need both A and B.';
+          return;
+        }
+        const C = math.multiply(A, B);
+        out.textContent = 'A × B =\n' + formatMatrix(C);
+      } catch (e) {
+        out.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    // =========================
+    // Stats
+    // =========================
+    function parseDataSeries(text) {
+      const tokens = text.split(/[,\s]+/).map(x => x.trim()).filter(x => x.length > 0);
+      const values = tokens.map(t => parseFloat(t)).filter(v => !Number.isNaN(v));
+      return values;
+    }
+
+    function computeStats() {
+      const dataText = document.getElementById('statsData').value;
+      const out = document.getElementById('statsOutput');
+      const vals = parseDataSeries(dataText);
+      if (!vals.length) {
+        out.textContent = 'No data.';
+        return;
+      }
+      try {
+        const n = vals.length;
+        const mean = math.mean(vals);
+        const min = math.min(vals);
+        const max = math.max(vals);
+        const variance = math.variance(vals);
+        const std = math.std(vals);
+        const median = math.median(vals);
+        const sum = math.sum(vals);
+        out.textContent =
+          'n       = ' + n + '\n' +
+          'sum     = ' + sum + '\n' +
+          'mean    = ' + mean + '\n' +
+          'median  = ' + median + '\n' +
+          'min     = ' + min + '\n' +
+          'max     = ' + max + '\n' +
+          'variance= ' + variance + '\n' +
+          'std dev = ' + std;
+      } catch (e) {
+        out.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function clearStats() {
+      const dataEl = document.getElementById('statsData');
+      const out = document.getElementById('statsOutput');
+      if (dataEl) dataEl.value = '';
+      if (out) out.textContent = 'Paste data and hit "Compute stats".';
+    }
+
+    // =========================
+    // Data Viz
+    // =========================
+    let dataChart = null;
+
+    function parseLabelValueData(text) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const labels = [];
+      const values = [];
+      for (const line of lines) {
+        const parts = line.split(',');
+        if (parts.length < 2) continue;
+        const label = parts[0].trim();
+        const value = parseFloat(parts.slice(1).join(',').trim());
+        if (!label || Number.isNaN(value)) continue;
+        labels.push(label);
+        values.push(value);
+      }
+      return { labels, values };
+    }
+
+    function plotDataChart() {
+      const inputEl = document.getElementById('dataInput');
+      const typeEl = document.getElementById('dataChartType');
+      if (!inputEl || !typeEl) return;
+
+      const { labels, values } = parseLabelValueData(inputEl.value);
+      if (!labels.length) {
+        setStatus('No valid label/value data for Data Viz.');
+        return;
+      }
+
+      const chartType = typeEl.value || 'bar';
+      const canvas = document.getElementById('dataCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      if (dataChart) dataChart.destroy();
+
+      const config = {
+        type: chartType,
+        data: {
+          labels,
+          datasets: [{
+            label: 'Data',
+            data: values,
+            borderWidth: 1.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#e5e7eb' } }
+          }
+        }
+      };
+
+      if (chartType === 'bar' || chartType === 'line') {
+        config.options.scales = {
+          x: {
+            ticks: { color: '#9ca3af' },
+            grid: { color: 'rgba(55,65,81,0.4)' }
+          },
+          y: {
+            ticks: { color: '#9ca3af' },
+            grid: { color: 'rgba(55,65,81,0.4)' }
+          }
+        };
+      }
+
+      dataChart = new Chart(ctx, config);
+      setStatus('Rendered data chart (' + chartType + ').');
+    }
+
+    function clearDataChart() {
+      const inputEl = document.getElementById('dataInput');
+      if (inputEl) inputEl.value = '';
+      if (dataChart) {
+        dataChart.destroy();
+        dataChart = null;
+      }
+      setStatus('Cleared data chart.');
+    }
+
+    // =========================
+    // Solve tools
+    // =========================
+    function loadExprIntoDeriv() {
+      const el = document.getElementById('solveDerivExpr');
+      if (el) el.value = expression || display || "0";
+    }
+    function loadExprIntoIntegral() {
+      const el = document.getElementById('solveIntExpr');
+      if (el) el.value = expression || display || "0";
+    }
+    function loadExprIntoRoot() {
+      const el = document.getElementById('solveRootExpr');
+      if (el) el.value = expression || display || "0";
+    }
+
+    function solveDerivative() {
+      const exprEl = document.getElementById('solveDerivExpr');
+      const x0El = document.getElementById('solveDerivX0');
+      const outEl = document.getElementById('solveDerivOutput');
+      if (!exprEl || !x0El || !outEl) return;
+
+      const expr = exprEl.value.trim();
+      if (!expr) {
+        outEl.textContent = 'No expression.';
+        return;
+      }
+      const x0 = parseFloat(x0El.value);
+      if (!isFinite(x0)) {
+        outEl.textContent = 'Invalid x₀.';
+        return;
+      }
+
+      const h = 1e-5;
+      try {
+        const scope1 = { x: x0 + h, ans, mem: memory, memory };
+        const scope2 = { x: x0 - h, ans, mem: memory, memory };
+        const f1 = math.evaluate(expr, scope1);
+        const f2 = math.evaluate(expr, scope2);
+        const d = (f1 - f2) / (2 * h);
+
+        outEl.textContent =
+          'f(x) = ' + expr + '\n' +
+          'x₀   = ' + x0 + '\n' +
+          "h    = " + h + '\n\n' +
+          'f(x₀ + h) ≈ ' + f1 + '\n' +
+          'f(x₀ - h) ≈ ' + f2 + '\n\n' +
+          "f'(x₀) ≈ " + d;
+      } catch (e) {
+        outEl.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function solveIntegral() {
+      const exprEl = document.getElementById('solveIntExpr');
+      const aEl = document.getElementById('solveIntA');
+      const bEl = document.getElementById('solveIntB');
+      const outEl = document.getElementById('solveIntOutput');
+      if (!exprEl || !aEl || !bEl || !outEl) return;
+
+      const expr = exprEl.value.trim();
+      if (!expr) {
+        outEl.textContent = 'No expression.';
+        return;
+      }
+      const a = parseFloat(aEl.value);
+      const b = parseFloat(bEl.value);
+      if (!isFinite(a) || !isFinite(b) || a === b) {
+        outEl.textContent = 'Invalid interval [a, b].';
+        return;
+      }
+
+      const n = 400; // even
+      const h = (b - a) / n;
+      let sum = 0;
+      try {
+        for (let i = 0; i <= n; i++) {
+          const x = a + i * h;
+          const scope = { x, ans, mem: memory, memory };
+          const fx = math.evaluate(expr, scope);
+          const coeff = (i === 0 || i === n) ? 1 : (i % 2 === 0 ? 2 : 4);
+          sum += coeff * fx;
+        }
+        const integral = (h / 3) * sum;
+        outEl.textContent =
+          'Integral of f(x) = ' + expr + '\n' +
+          'over [' + a + ', ' + b + '] (Simpson, n=' + n + '):\n\n' +
+          '≈ ' + integral;
+      } catch (e) {
+        outEl.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function solveRoot() {
+      const exprEl = document.getElementById('solveRootExpr');
+      const guessEl = document.getElementById('solveRootGuess');
+      const outEl = document.getElementById('solveRootOutput');
+      if (!exprEl || !guessEl || !outEl) return;
+
+      const expr = exprEl.value.trim();
+      if (!expr) {
+        outEl.textContent = 'No expression.';
+        return;
+      }
+      let x = parseFloat(guessEl.value);
+      if (!isFinite(x)) {
+        outEl.textContent = 'Invalid initial guess.';
+        return;
+      }
+
+      const maxIter = 30;
+      const tol = 1e-8;
+      const h = 1e-5;
+      const lines = [];
+      lines.push('f(x) = ' + expr);
+      lines.push('x₀   = ' + x);
+      lines.push('max iterations = ' + maxIter);
+      lines.push('tolerance      = ' + tol);
+      lines.push('');
+
+      try {
+        for (let i = 0; i < maxIter; i++) {
+          const scope = { x, ans, mem: memory, memory };
+          const fx = math.evaluate(expr, scope);
+
+          const scope1 = { x: x + h, ans, mem: memory, memory };
+          const scope2 = { x: x - h, ans, mem: memory, memory };
+          const f1 = math.evaluate(expr, scope1);
+          const f2 = math.evaluate(expr, scope2);
+          const dfdx = (f1 - f2) / (2 * h);
+
+          lines.push(
+            'Iter ' + i +
+            ': x = ' + x +
+            ', f(x) = ' + fx +
+            ', f\'(x) ≈ ' + dfdx
+          );
+
+          if (Math.abs(fx) < tol) {
+            lines.push('');
+            lines.push('Converged: |f(x)| < tol');
+            lines.push('Root ≈ ' + x);
+            outEl.textContent = lines.join('\n');
+            return;
+          }
+          if (!isFinite(dfdx) || Math.abs(dfdx) < 1e-12) {
+            lines.push('');
+            lines.push('Derivative too small or invalid, aborting.');
+            outEl.textContent = lines.join('\n');
+            return;
+          }
+
+          const xNext = x - fx / dfdx;
+          if (!isFinite(xNext)) {
+            lines.push('');
+            lines.push('Next x not finite, aborting.');
+            outEl.textContent = lines.join('\n');
+            return;
+          }
+
+          if (Math.abs(xNext - x) < tol) {
+            x = xNext;
+            lines.push('');
+            lines.push('Step below tol, treating as converged.');
+            lines.push('Root ≈ ' + x);
+            outEl.textContent = lines.join('\n');
+            return;
+          }
+
+          x = xNext;
+        }
+
+        lines.push('');
+        lines.push('Max iterations reached. Last x ≈ ' + x);
+        outEl.textContent = lines.join('\n');
+      } catch (e) {
+        outEl.textContent = 'Error during iteration: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>
