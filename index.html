@@ -5,7 +5,6 @@
   <title>NerdLab Calc v2 · Ultimate Nerd Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,9 +19,7 @@
     }
   </script>
 
-  <!-- Chart.js for graphing -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- math.js for hardcore math -->
   <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
 
   <style>
@@ -128,26 +125,29 @@
     }
   </style>
   <style>
-    /* Small-screen portrait: shrink overall scale slightly so calculator fits */
+    /* FLUID SCALING for Mobile Portrait:
+      Instead of a fixed pixel size, we use 'vw' (viewport width).
+      2.5vw means the base size is 2.5% of the screen width.
+      This forces the entire calculator to shrink proportionally 
+      to fit exactly within the width of any phone screen.
+    */
     @media (max-width: 480px) {
       html {
-        font-size: 10px; /* was 11px */
+        font-size: 2.5vw; 
       }
     }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-100 antialiased">
-  <div class="relative min-h-screen flex flex-col items-center px-3 py-4 md:px-6 md:py-8 overflow-x-hidden">
-    <!-- background orbs -->
+<body class="min-h-screen text-slate-100 antialiased overflow-x-hidden">
+  <div class="relative min-h-screen flex flex-col items-center px-0 py-4 md:px-6 md:py-8 overflow-x-hidden">
     <div class="pointer-events-none fixed inset-0 -z-10">
       <div class="absolute -top-40 -left-24 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl"></div>
       <div class="absolute top-40 -right-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl"></div>
       <div class="absolute bottom-0 left-1/2 -translate-x-1/2 h-72 w-[32rem] rounded-full bg-sky-400/10 blur-3xl"></div>
     </div>
 
-    <!-- Header -->
-    <header class="w-full max-w-6xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <header class="w-full max-w-6xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-3 md:px-0">
       <div class="flex items-center gap-4">
         <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-400 to-blue-700 shadow-lg shadow-sky-500/40 flex items-center justify-center">
           <span class="font-mono font-bold text-xl text-slate-950">ƒ</span>
@@ -170,11 +170,9 @@
       </div>
     </header>
 
-    <!-- Main layout -->
-    <main class="w-full max-w-6xl grid gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)] items-stretch">
-      <!-- Calculator panel -->
-      <section class="fc-card p-4 md:p-5 flex flex-col gap-4">
-        <header class="flex items-start justify-between gap-3">
+    <main class="w-full max-w-6xl grid gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)] items-stretch px-1 md:px-0">
+      <section class="fc-card p-2 md:p-5 flex flex-col gap-4">
+        <header class="flex items-start justify-between gap-3 px-1">
           <div>
             <h2 class="text-sm font-semibold tracking-[0.28em] uppercase text-slate-300/80">
               Core Calculator
@@ -195,7 +193,6 @@
           </div>
         </header>
 
-        <!-- Display -->
         <div class="rounded-2xl border border-slate-600/80 bg-slate-950/80 px-4 py-3 flex flex-col gap-1 shadow-inner shadow-slate-900/80">
           <div class="flex items-center justify-between text-[0.65rem] font-mono text-slate-400">
             <span id="status-line" class="truncate">Ready.</span>
@@ -212,9 +209,7 @@
           </div>
         </div>
 
-        <!-- Keypads -->
-        <div class="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-3 mt-2">
-          <!-- Primary keypad -->
+        <div class="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-2 md:gap-3 mt-2">
           <div class="grid grid-rows-[auto_1fr] gap-2">
             <div class="grid grid-cols-4 gap-1.5 text-xs">
               <button data-key="mode-deg" class="calc-btn px-2 py-1.5 rounded-lg font-mono">DEG</button>
@@ -252,7 +247,6 @@
             </div>
           </div>
 
-          <!-- Sci / memory keypad -->
           <div class="grid grid-rows-[auto_1fr] gap-2 text-xs">
             <div class="grid grid-cols-4 gap-1.5">
               <button data-mem="mc" class="calc-btn rounded-lg px-2 py-1.5 font-mono">MC</button>
@@ -285,10 +279,9 @@
         </div>
       </section>
 
-      <!-- Workbench / Tabs -->
-      <section class="fc-card-soft p-4 md:p-5 flex flex-col gap-3">
+      <section class="fc-card-soft p-2 md:p-5 flex flex-col gap-3">
         <header class="flex flex-col gap-2">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 px-1">
             <div>
               <h2 class="text-sm font-semibold tracking-[0.28em] uppercase text-slate-300/80">
                 Workbench
@@ -332,7 +325,6 @@
         </header>
 
         <div class="flex-1 min-h-0">
-          <!-- Console tab -->
           <div id="tab-console" class="space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.9)]"></span>
@@ -375,7 +367,6 @@ Enter an expression and hit Run.</pre>
             </div>
           </div>
 
-          <!-- Graph tab -->
           <div id="tab-graph" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.9)]"></span>
@@ -415,7 +406,6 @@ Enter an expression and hit Run.</pre>
             </div>
           </div>
 
-          <!-- Matrix tab -->
           <div id="tab-matrix" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.9)]"></span>
@@ -448,7 +438,6 @@ Paste matrices and choose an operation.</pre>
             </div>
           </div>
 
-          <!-- Stats tab -->
           <div id="tab-stats" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.9)]"></span>
@@ -476,7 +465,6 @@ Paste data and hit "Compute stats".</pre>
             </div>
           </div>
 
-          <!-- Data Viz tab -->
           <div id="tab-data" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]"></span>
@@ -532,7 +520,6 @@ Cherries, 7"></textarea>
             </div>
           </div>
 
-          <!-- Geometry tab -->
           <div id="tab-geometry" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.9)]"></span>
@@ -542,7 +529,6 @@ Cherries, 7"></textarea>
               Compute area, perimeter, surface area, and volume for common shapes using clean numeric inputs.
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <!-- 2D geometry -->
               <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 space-y-2">
                 <h4 class="text-xs font-semibold text-sky-300">2D shapes (area &amp; perimeter)</h4>
                 <div>
@@ -580,7 +566,6 @@ Cherries, 7"></textarea>
 Select a shape, fill parameters, then hit "Compute 2D".</pre>
               </div>
 
-              <!-- 3D geometry -->
               <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 space-y-2">
                 <h4 class="text-xs font-semibold text-sky-300">3D solids (surface area &amp; volume)</h4>
                 <div>
@@ -618,7 +603,6 @@ Select a solid, fill parameters, then hit "Compute 3D".</pre>
             </div>
           </div>
 
-          <!-- Solve tab -->
           <div id="tab-solve" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.9)]"></span>
@@ -628,7 +612,6 @@ Select a solid, fill parameters, then hit "Compute 3D".</pre>
               Numeric tools for calculus and equation solving. Uses the same math.js engine as the main calculator.
             </p>
             <div class="space-y-3 text-xs">
-              <!-- Derivative -->
               <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3">
                 <div class="space-y-2">
                   <h4 class="text-xs font-semibold text-sky-300">Derivative at a point</h4>
@@ -652,7 +635,6 @@ f'(x₀) will appear here.</pre>
                 </div>
               </div>
 
-              <!-- Integral -->
               <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3">
                 <div class="space-y-2">
                   <h4 class="text-xs font-semibold text-sky-300">Definite integral</h4>
@@ -684,7 +666,6 @@ f'(x₀) will appear here.</pre>
                 </div>
               </div>
 
-              <!-- Root finding -->
               <div class="rounded-xl bg-slate-950/90 border border-slate-700/90 p-3 grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3">
                 <div class="space-y-2">
                   <h4 class="text-xs font-semibold text-sky-300">Root finding (solve f(x) = 0)</h4>
@@ -710,7 +691,6 @@ Iteration log and final root will appear here.</pre>
             </div>
           </div>
 
-          <!-- Programmer tab -->
           <div id="tab-programmer" class="hidden space-y-3">
             <h3 class="text-sm md:text-base font-semibold text-sky-300 flex items-center gap-2">
               <span class="inline-flex h-2 w-2 rounded-full bg-fuchsia-400 shadow-[0_0_10px_rgba(232,121,249,0.9)]"></span>
@@ -752,11 +732,11 @@ Iteration log and final root will appear here.</pre>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div>
                     <label class="block text-[0.7rem] text-slate-300/90">Operand A (int)</label>
-                    <input id="progBitA" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="5" />
+                    <input id="progBitA" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="5" />
                   </div>
                   <div>
                     <label class="block text-[0.7rem] text-slate-300/90">Operand B (int)</label>
-                    <input id="progBitB" class="w-full px-2 py-1.5 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="3" />
+                    <input id="progBitB" class="w-full px-2 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/80 font-mono text-[0.75rem] outline-none focus:ring-1 focus:ring-sky-500/70 focus:border-sky-500/80" placeholder="3" />
                   </div>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
@@ -785,1262 +765,6 @@ Enter A and B, then choose an operation.</pre>
     </footer>
   </div>
 
-  <!-- App logic -->
-  <script>
-    // =========================
-    // Global state
-    // =========================
-    let expression = "";
-    let display = "0";
-    let ans = 0;
-    let memory = 0;
-    let angleMode = "RAD"; // RAD or DEG
-    let baseMode = "DEC";  // future: HEX/BIN
-
-    // DOM refs (assigned after DOMContentLoaded)
-    let exprEl, mainEl, statusEl, memEl, ansEl, anglePillEl, basePillEl;
-
-    function safeParseFloat(val) {
-      const n = parseFloat(val);
-      if (Number.isNaN(n)) return 0;
-      return n;
-    }
-
-    function updateDisplay() {
-      if (!exprEl || !mainEl || !memEl || !ansEl || !anglePillEl || !basePillEl) return;
-      exprEl.textContent = expression;
-      mainEl.textContent = display;
-      memEl.textContent = memory.toString();
-      ansEl.textContent = ans.toString();
-      anglePillEl.textContent = "Angle: " + angleMode;
-      basePillEl.textContent = baseMode;
-    }
-
-    function setStatus(msg) {
-      if (!statusEl) return;
-      statusEl.textContent = msg;
-    }
-
-    function clearAll() {
-      expression = "";
-      display = "0";
-      setStatus("Cleared.");
-      updateDisplay();
-    }
-
-    function backspace() {
-      if (!expression) return;
-      expression = expression.slice(0, -1);
-      display = expression || "0";
-      updateDisplay();
-    }
-
-    function pushKey(key) {
-      expression += key;
-      display = expression;
-      updateDisplay();
-    }
-
-    function pushOp(op) {
-      if (op === "×") expression += "*";
-      else if (op === "÷") expression += "/";
-      else expression += op;
-      display = expression;
-      updateDisplay();
-    }
-
-    function pushFunc(name) {
-      if (name === "pi") {
-        expression += "pi";
-      } else if (name === "e") {
-        expression += "e";
-      } else if (name === "rand") {
-        expression += "random()";
-      } else if (name === "sqrt") {
-        expression += "sqrt(";
-      } else if (name === "square") {
-        expression += "(" + (expression || "ans") + ")^2";
-      } else if (name === "inv") {
-        expression = "1/(" + (expression || "ans") + ")";
-      } else if (name === "sin" || name === "cos" || name === "tan") {
-        const base = (angleMode === "DEG") ? name + "d" : name;
-        expression += base + "(";
-      } else if (name === "ln") {
-        expression += "log(";
-      } else if (name === "log10") {
-        expression += "log10(";
-      } else if (name === "abs") {
-        expression += "abs(";
-      } else if (name === "sign") {
-        if (expression) expression = "-(" + expression + ")";
-        else expression = "-(" + ans + ")";
-      } else if (name === "factorial") {
-        expression = "(" + (expression || "ans") + ")!";
-      } else if (name === "ans") {
-        expression += "ans";
-      }
-      display = expression;
-      updateDisplay();
-    }
-
-    function toggleAngle(mode) {
-      angleMode = mode;
-      setStatus("Angle mode: " + mode);
-      updateDisplay();
-    }
-
-    function memoryOp(op) {
-      if (op === "mc") {
-        memory = 0;
-      } else if (op === "mr") {
-        expression += memory.toString();
-      } else if (op === "mplus") {
-        memory += safeParseFloat(display);
-      } else if (op === "mminus") {
-        memory -= safeParseFloat(display);
-      }
-      updateDisplay();
-    }
-
-    // math.js config + sind/cosd/tand
-    if (typeof math !== "undefined") {
-      math.config({ number: 'number', precision: 16 });
-      math.import({
-        sind: x => math.sin(x * math.pi / 180),
-        cosd: x => math.cos(x * math.pi / 180),
-        tand: x => math.tan(x * math.pi / 180),
-      }, { override: true });
-    }
-
-    // =========================
-    // DOM wiring
-    // =========================
-    document.addEventListener('DOMContentLoaded', () => {
-      // Cache DOM elements
-      exprEl = document.getElementById('expression-display');
-      mainEl = document.getElementById('main-display');
-      statusEl = document.getElementById('status-line');
-      memEl = document.getElementById('memory-indicator');
-      ansEl = document.getElementById('ans-indicator');
-      anglePillEl = document.getElementById('angle-mode-pill');
-      basePillEl = document.getElementById('base-mode-pill');
-
-      updateDisplay();
-      setStatus("Ready.");
-
-      // Keypads
-      document.querySelectorAll('[data-key]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const k = btn.getAttribute('data-key');
-          if (k === 'mode-deg') toggleAngle('DEG');
-          else if (k === 'mode-rad') toggleAngle('RAD');
-          else if (k === 'mode-clear') clearAll();
-          else if (k === 'mode-del') backspace();
-          else pushKey(k);
-        });
-      });
-
-      document.querySelectorAll('[data-op]').forEach(btn => {
-        btn.addEventListener('click', () => pushOp(btn.getAttribute('data-op')));
-      });
-
-      document.querySelectorAll('[data-func]').forEach(btn => {
-        btn.addEventListener('click', () => pushFunc(btn.getAttribute('data-func')));
-      });
-
-      document.querySelectorAll('[data-mem]').forEach(btn => {
-        btn.addEventListener('click', () => memoryOp(btn.getAttribute('data-mem')));
-      });
-
-      const evalBtn = document.querySelector('[data-eval="="]');
-      if (evalBtn) {
-        evalBtn.addEventListener('click', evaluateExpression);
-      }
-
-      // === Keyboard handling ===
-      document.addEventListener('keydown', (e) => {
-        const tag = e.target.tagName.toLowerCase();
-        const isEditable =
-          tag === 'input' ||
-          tag === 'textarea' ||
-          e.target.isContentEditable;
-
-        // If typing in an input/textarea, let normal behavior happen,
-        // except: Shift+Enter in console should run the console.
-        if (isEditable) {
-          if (e.target.id === 'consoleInput' && e.key === 'Enter' && e.shiftKey) {
-            e.preventDefault();
-            runConsole();
-          }
-          return;
-        }
-
-        // Outside of editable fields → route keys to main calculator
-        const key = e.key;
-        if ((key >= '0' && key <= '9') || key === '.' || key === '(' || key === ')') {
-          pushKey(key);
-        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
-          pushKey(key);
-        } else if (key === 'Enter') {
-          e.preventDefault();
-          evaluateExpression();
-        } else if (key === 'Backspace') {
-          e.preventDefault();
-          backspace();
-        } else if (key === 'Escape') {
-          clearAll();
-        }
-      });
-
-      // Tabs
-      document.querySelectorAll('[data-tab-target]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const target = btn.getAttribute('data-tab-target');
-          document.querySelectorAll('[data-tab-target]').forEach(b => {
-            b.classList.remove('tab-pill-active', 'tab-pill-inactive');
-            b.classList.add('tab-pill-inactive');
-          });
-          btn.classList.remove('tab-pill-inactive');
-          btn.classList.add('tab-pill-active');
-
-          document.querySelectorAll('[id^="tab-"]').forEach(panel => {
-            panel.classList.add('hidden');
-          });
-          const panel = document.getElementById('tab-' + target);
-          if (panel) panel.classList.remove('hidden');
-        });
-      });
-
-      // Initialize geometry field labels / visibility
-      updateGeom2DFields();
-      updateGeom3DFields();
-    });
-
-    // =========================
-    // Core evaluation
-    // =========================
-    function evaluateExpression() {
-      if (!expression.trim()) {
-        setStatus("Nothing to evaluate.");
-        return;
-      }
-      try {
-        const scope = { ans, memory, mem: memory, pi: Math.PI, e: Math.E };
-        const result = math.evaluate(expression, scope);
-        if (typeof result === "number") {
-          ans = result;
-          display = (Math.abs(result) < 1e-9 ? "0" : result.toString());
-        } else {
-          display = result.toString();
-        }
-        setStatus("OK.");
-        updateDisplay();
-      } catch (err) {
-        setStatus("Error: " + err.message);
-      }
-    }
-
-    // =========================
-    // Console
-    // =========================
-    function formatConsoleResult(val) {
-      try {
-        if (typeof val === 'number') {
-          if (!isFinite(val)) return val.toString();
-          if (Math.abs(val) < 1e-4 || Math.abs(val) >= 1e6) {
-            return val.toExponential(8);
-          }
-          return parseFloat(val.toPrecision(12)).toString();
-        }
-        if (typeof math !== 'undefined' && math.typeOf) {
-          const t = math.typeOf(val);
-          if (['Complex','Fraction','BigNumber','Matrix'].includes(t)) {
-            return val.toString();
-          }
-        }
-        if (Array.isArray(val)) return JSON.stringify(val, null, 2);
-        return String(val);
-      } catch (e) {
-        return String(val);
-      }
-    }
-
-    function runConsole() {
-      const inputEl = document.getElementById('consoleInput');
-      const outEl = document.getElementById('consoleOutput');
-      if (!inputEl || !outEl) return;
-
-      const text = inputEl.value;
-      if (!text.trim()) {
-        outEl.textContent = 'No input.';
-        return;
-      }
-
-      const scope = { ans: safeParseFloat(display), mem: memory, memory };
-      const lines = text.split('\n').filter(line => line.trim().length > 0);
-      const results = [];
-      try {
-        for (const line of lines) {
-          const expr = line.trim();
-          const value = math.evaluate(expr, scope);
-          results.push('> ' + expr + '\n' + formatConsoleResult(value));
-        }
-        outEl.textContent = results.join('\n\n');
-      } catch (err) {
-        outEl.textContent = 'Error: ' + err.message;
-      }
-    }
-
-    function clearConsole() {
-      const inputEl = document.getElementById('consoleInput');
-      const outEl = document.getElementById('consoleOutput');
-      if (inputEl) inputEl.value = '';
-      if (outEl) outEl.textContent = 'Enter an expression and hit Run.';
-    }
-
-    function loadExprIntoConsole() {
-      const inputEl = document.getElementById('consoleInput');
-      if (inputEl) {
-        const expr = expression || display || "0";
-        inputEl.value = expr;
-      }
-    }
-
-    // =========================
-    // Graphing
-    // =========================
-    let graphChart = null;
-
-    function buildGraphPoints(expr, xmin, xmax, steps) {
-      const xs = [];
-      const ys = [];
-      const step = (xmax - xmin) / steps;
-      for (let i = 0; i <= steps; i++) {
-        const x = xmin + i * step;
-        let y;
-        try {
-          y = math.evaluate(expr, { x, ans, mem: memory, memory });
-        } catch (e) {
-          y = NaN;
-        }
-        xs.push(x);
-        ys.push(typeof y === 'number' && isFinite(y) ? y : NaN);
-      }
-      return { xs, ys };
-    }
-
-    function plotGraph() {
-      const exprInput = document.getElementById('graphExpr');
-      const xminEl = document.getElementById('graphXMin');
-      const xmaxEl = document.getElementById('graphXMax');
-      if (!exprInput || !xminEl || !xmaxEl) return;
-
-      const exprVal = exprInput.value.trim();
-      if (!exprVal) {
-        setStatus('No graph expression.');
-        return;
-      }
-
-      const xmin = parseFloat(xminEl.value);
-      const xmax = parseFloat(xmaxEl.value);
-      if (!isFinite(xmin) || !isFinite(xmax) || xmin >= xmax) {
-        setStatus('Invalid x range.');
-        return;
-      }
-
-      const { xs, ys } = buildGraphPoints(exprVal, xmin, xmax, 400);
-      const canvas = document.getElementById('graphCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-
-      if (graphChart) graphChart.destroy();
-
-      graphChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: xs,
-          datasets: [{
-            label: 'f(x) = ' + exprVal,
-            data: ys,
-            borderWidth: 1.5,
-            pointRadius: 0,
-            tension: 0.1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              ticks: { color: '#9ca3af' },
-              grid: { color: 'rgba(55,65,81,0.4)' }
-            },
-            y: {
-              ticks: { color: '#9ca3af' },
-              grid: { color: 'rgba(55,65,81,0.4)' }
-            }
-          },
-          plugins: {
-            legend: {
-              labels: { color: '#e5e7eb' }
-            }
-          }
-        }
-      });
-
-      setStatus('Plotted f(x).');
-    }
-
-    function resetGraph() {
-      const exprInput = document.getElementById('graphExpr');
-      const xminEl = document.getElementById('graphXMin');
-      const xmaxEl = document.getElementById('graphXMax');
-      if (exprInput) exprInput.value = '';
-      if (xminEl) xminEl.value = '-10';
-      if (xmaxEl) xmaxEl.value = '10';
-      if (graphChart) {
-        graphChart.destroy();
-        graphChart = null;
-      }
-      setStatus('Graph reset.');
-    }
-
-    function loadExprIntoGraph() {
-      const exprInput = document.getElementById('graphExpr');
-      if (exprInput) {
-        const exprVal = expression || display || "0";
-        exprInput.value = exprVal;
-      }
-    }
-
-    // =========================
-    // Matrix Lab
-    // =========================
-    function parseMatrix(text) {
-      const rows = text.split('\n').map(r => r.trim()).filter(r => r.length > 0);
-      if (!rows.length) return null;
-      const matrix = rows.map(row =>
-        row.split(/[, \t]+/).map(x => parseFloat(x)).filter(v => !Number.isNaN(v))
-      );
-      return math.matrix(matrix);
-    }
-
-    function formatMatrix(m) {
-      try {
-        if (math.typeOf(m) === 'Matrix') return m.toString();
-        return String(m);
-      } catch (e) {
-        return String(m);
-      }
-    }
-
-    function matrixDet() {
-      const aText = document.getElementById('matrixA').value;
-      const out = document.getElementById('matrixOutput');
-      try {
-        const A = parseMatrix(aText);
-        if (!A) {
-          out.textContent = 'No matrix A.';
-          return;
-        }
-        const d = math.det(A);
-        out.textContent = 'det(A) = ' + d.toString();
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function matrixInv() {
-      const aText = document.getElementById('matrixA').value;
-      const out = document.getElementById('matrixOutput');
-      try {
-        const A = parseMatrix(aText);
-        if (!A) {
-          out.textContent = 'No matrix A.';
-          return;
-        }
-        const inv = math.inv(A);
-        out.textContent = 'inv(A) =\n' + formatMatrix(inv);
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function matrixMul() {
-      const aText = document.getElementById('matrixA').value;
-      const bText = document.getElementById('matrixB').value;
-      const out = document.getElementById('matrixOutput');
-      try {
-        const A = parseMatrix(aText);
-        const B = parseMatrix(bText);
-        if (!A || !B) {
-          out.textContent = 'Need both A and B.';
-          return;
-        }
-        const C = math.multiply(A, B);
-        out.textContent = 'A × B =\n' + formatMatrix(C);
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    // =========================
-    // Stats
-    // =========================
-    function parseDataSeries(text) {
-      const tokens = text.split(/[,\s]+/).map(x => x.trim()).filter(x => x.length > 0);
-      const values = tokens.map(t => parseFloat(t)).filter(v => !Number.isNaN(v));
-      return values;
-    }
-
-    function computeStats() {
-      const dataText = document.getElementById('statsData').value;
-      const out = document.getElementById('statsOutput');
-      const vals = parseDataSeries(dataText);
-      if (!vals.length) {
-        out.textContent = 'No data.';
-        return;
-      }
-      try {
-        const n = vals.length;
-        const mean = math.mean(vals);
-        const min = math.min(vals);
-        const max = math.max(vals);
-        const variance = math.variance(vals);
-        const std = math.std(vals);
-        const median = math.median(vals);
-        const sum = math.sum(vals);
-        out.textContent =
-          'n       = ' + n + '\n' +
-          'sum     = ' + sum + '\n' +
-          'mean    = ' + mean + '\n' +
-          'median  = ' + median + '\n' +
-          'min     = ' + min + '\n' +
-          'max     = ' + max + '\n' +
-          'variance= ' + variance + '\n' +
-          'std dev = ' + std;
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function clearStats() {
-      const dataEl = document.getElementById('statsData');
-      const out = document.getElementById('statsOutput');
-      if (dataEl) dataEl.value = '';
-      if (out) out.textContent = 'Paste data and hit "Compute stats".';
-    }
-
-    // =========================
-    // Data Viz
-    // =========================
-    let dataChart = null;
-
-    function parseLabelValueData(text) {
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      const labels = [];
-      const values = [];
-      for (const line of lines) {
-        const parts = line.split(',');
-        if (parts.length < 2) continue;
-        const label = parts[0].trim();
-        const value = parseFloat(parts.slice(1).join(',').trim());
-        if (!label || Number.isNaN(value)) continue;
-        labels.push(label);
-        values.push(value);
-      }
-      return { labels, values };
-    }
-
-    function plotDataChart() {
-      const inputEl = document.getElementById('dataInput');
-      const typeEl = document.getElementById('dataChartType');
-      if (!inputEl || !typeEl) return;
-
-      const { labels, values } = parseLabelValueData(inputEl.value);
-      if (!labels.length) {
-        setStatus('No valid label/value data for Data Viz.');
-        return;
-      }
-
-      const chartType = typeEl.value || 'bar';
-      const canvas = document.getElementById('dataCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-
-      if (dataChart) dataChart.destroy();
-
-      const config = {
-        type: chartType,
-        data: {
-          labels,
-          datasets: [{
-            label: 'Data',
-            data: values,
-            borderWidth: 1.5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#e5e7eb' } }
-          }
-        }
-      };
-
-      if (chartType === 'bar' || chartType === 'line') {
-        config.options.scales = {
-          x: {
-            ticks: { color: '#9ca3af' },
-            grid: { color: 'rgba(55,65,81,0.4)' }
-          },
-          y: {
-            ticks: { color: '#9ca3af' },
-            grid: { color: 'rgba(55,65,81,0.4)' }
-          }
-        };
-      }
-
-      dataChart = new Chart(ctx, config);
-      setStatus('Rendered data chart (' + chartType + ').');
-    }
-
-    function clearDataChart() {
-      const inputEl = document.getElementById('dataInput');
-      if (inputEl) inputEl.value = '';
-      if (dataChart) {
-        dataChart.destroy();
-        dataChart = null;
-      }
-      setStatus('Cleared data chart.');
-    }
-
-    // =========================
-    // Geometry (2D & 3D)
-    // =========================
-    function updateGeom2DFields() {
-      const shapeEl = document.getElementById('geom2dShape');
-      if (!shapeEl) return;
-      const shape = shapeEl.value;
-
-      const p1Group = document.getElementById('geom2dP1Group');
-      const p2Group = document.getElementById('geom2dP2Group');
-      const p3Group = document.getElementById('geom2dP3Group');
-      const p1Label = document.getElementById('geom2dP1Label');
-      const p2Label = document.getElementById('geom2dP2Label');
-      const p3Label = document.getElementById('geom2dP3Label');
-
-      if (!p1Group || !p2Group || !p3Group || !p1Label || !p2Label || !p3Label) return;
-
-      // Default: hide all, then enable per-shape
-      p1Group.classList.remove('hidden');
-      p2Group.classList.add('hidden');
-      p3Group.classList.add('hidden');
-
-      if (shape === 'circle') {
-        p1Label.textContent = 'Radius r';
-      } else if (shape === 'rectangle') {
-        p1Label.textContent = 'Width w';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-      } else if (shape === 'triangle-bh') {
-        p1Label.textContent = 'Base b';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-      } else if (shape === 'triangle-sss') {
-        p1Label.textContent = 'Side a';
-        p2Label.textContent = 'Side b';
-        p3Label.textContent = 'Side c';
-        p2Group.classList.remove('hidden');
-        p3Group.classList.remove('hidden');
-      } else if (shape === 'trapezoid') {
-        p1Label.textContent = 'Base a';
-        p2Label.textContent = 'Base b';
-        p3Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-        p3Group.classList.remove('hidden');
-      } else if (shape === 'regular-polygon') {
-        p1Label.textContent = 'Number of sides n';
-        p2Label.textContent = 'Side length s';
-        p2Group.classList.remove('hidden');
-      }
-    }
-
-    function computeGeom2D() {
-      const shapeEl = document.getElementById('geom2dShape');
-      const outEl = document.getElementById('geom2dOutput');
-      const p1El = document.getElementById('geom2dP1');
-      const p2El = document.getElementById('geom2dP2');
-      const p3El = document.getElementById('geom2dP3');
-      if (!shapeEl || !outEl || !p1El || !p2El || !p3El) return;
-
-      const shape = shapeEl.value;
-      const p1 = parseFloat(p1El.value);
-      const p2 = parseFloat(p2El.value);
-      const p3 = parseFloat(p3El.value);
-
-      function invalid(msg) {
-        outEl.textContent = msg;
-        setStatus('Geometry 2D: ' + msg);
-      }
-
-      let area = null;
-      let perimeter = null;
-      let extra = [];
-
-      if (shape === 'circle') {
-        if (!isFinite(p1) || p1 <= 0) return invalid('Radius must be a positive number.');
-        const r = p1;
-        area = Math.PI * r * r;
-        perimeter = 2 * Math.PI * r;
-        extra.push('r = ' + r);
-      } else if (shape === 'rectangle') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Width and height must be positive.');
-        }
-        const w = p1, h = p2;
-        area = w * h;
-        perimeter = 2 * (w + h);
-        extra.push('w = ' + w);
-        extra.push('h = ' + h);
-      } else if (shape === 'triangle-bh') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Base and height must be positive.');
-        }
-        const b = p1, h = p2;
-        area = 0.5 * b * h;
-        perimeter = null; // cannot determine from b & h alone
-        extra.push('b = ' + b);
-        extra.push('h = ' + h);
-      } else if (shape === 'triangle-sss') {
-        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
-          return invalid('All sides must be positive.');
-        }
-        const a = p1, b = p2, c = p3;
-        if (a + b <= c || a + c <= b || b + c <= a) {
-          return invalid('Triangle inequality violated (a + b > c, etc.).');
-        }
-        const s = (a + b + c) / 2;
-        area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
-        perimeter = a + b + c;
-        extra.push('a = ' + a);
-        extra.push('b = ' + b);
-        extra.push('c = ' + c);
-        extra.push('s (semiperimeter) = ' + s);
-      } else if (shape === 'trapezoid') {
-        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
-          return invalid('Bases and height must be positive.');
-        }
-        const a = p1, b = p2, h = p3;
-        area = 0.5 * (a + b) * h;
-        perimeter = null; // legs unknown
-        extra.push('base a = ' + a);
-        extra.push('base b = ' + b);
-        extra.push('h = ' + h);
-      } else if (shape === 'regular-polygon') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 2 || p2 <= 0) {
-          return invalid('n must be > 2 and side length > 0.');
-        }
-        const n = p1;
-        const s = p2;
-        const perimeterVal = n * s;
-        const areaVal = (n * s * s) / (4 * Math.tan(Math.PI / n));
-        area = areaVal;
-        perimeter = perimeterVal;
-        extra.push('n = ' + n);
-        extra.push('s = ' + s);
-      } else {
-        return invalid('Unknown shape.');
-      }
-
-      const lines = [];
-      lines.push('Shape: ' + shapeEl.options[shapeEl.selectedIndex].text);
-      if (extra.length) lines.push(extra.join(', '));
-
-      if (area != null) {
-        lines.push('Area ≈ ' + area);
-      }
-      if (perimeter != null) {
-        lines.push('Perimeter ≈ ' + perimeter);
-      } else {
-        lines.push('Perimeter: N/A for this parameterization.');
-      }
-
-      outEl.textContent = lines.join('\n');
-      setStatus('Geometry 2D: computed for ' + shape + '.');
-    }
-
-    function clearGeom2D() {
-      const p1El = document.getElementById('geom2dP1');
-      const p2El = document.getElementById('geom2dP2');
-      const p3El = document.getElementById('geom2dP3');
-      const outEl = document.getElementById('geom2dOutput');
-      if (p1El) p1El.value = '';
-      if (p2El) p2El.value = '';
-      if (p3El) p3El.value = '';
-      if (outEl) {
-        outEl.textContent = 'Select a shape, fill parameters, then hit "Compute 2D".';
-      }
-      setStatus('Geometry 2D: cleared.');
-    }
-
-    function updateGeom3DFields() {
-      const shapeEl = document.getElementById('geom3dShape');
-      if (!shapeEl) return;
-      const shape = shapeEl.value;
-
-      const p1Group = document.getElementById('geom3dP1Group');
-      const p2Group = document.getElementById('geom3dP2Group');
-      const p3Group = document.getElementById('geom3dP3Group');
-      const p1Label = document.getElementById('geom3dP1Label');
-      const p2Label = document.getElementById('geom3dP2Label');
-      const p3Label = document.getElementById('geom3dP3Label');
-
-      if (!p1Group || !p2Group || !p3Group || !p1Label || !p2Label || !p3Label) return;
-
-      p1Group.classList.remove('hidden');
-      p2Group.classList.add('hidden');
-      p3Group.classList.add('hidden');
-
-      if (shape === 'box') {
-        p1Label.textContent = 'Width w';
-        p2Label.textContent = 'Height h';
-        p3Label.textContent = 'Depth d';
-        p2Group.classList.remove('hidden');
-        p3Group.classList.remove('hidden');
-      } else if (shape === 'sphere') {
-        p1Label.textContent = 'Radius r';
-      } else if (shape === 'cylinder') {
-        p1Label.textContent = 'Radius r';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-      } else if (shape === 'cone') {
-        p1Label.textContent = 'Radius r';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-      }
-    }
-
-    function computeGeom3D() {
-      const shapeEl = document.getElementById('geom3dShape');
-      const outEl = document.getElementById('geom3dOutput');
-      const p1El = document.getElementById('geom3dP1');
-      const p2El = document.getElementById('geom3dP2');
-      const p3El = document.getElementById('geom3dP3');
-      if (!shapeEl || !outEl || !p1El || !p2El || !p3El) return;
-
-      const shape = shapeEl.value;
-      const p1 = parseFloat(p1El.value);
-      const p2 = parseFloat(p2El.value);
-      const p3 = parseFloat(p3El.value);
-
-      function invalid(msg) {
-        outEl.textContent = msg;
-        setStatus('Geometry 3D: ' + msg);
-      }
-
-      let surface = null;
-      let volume = null;
-      const extra = [];
-
-      if (shape === 'box') {
-        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
-          return invalid('Width, height, and depth must be positive.');
-        }
-        const w = p1, h = p2, d = p3;
-        surface = 2 * (w * h + w * d + h * d);
-        volume = w * h * d;
-        extra.push('w = ' + w);
-        extra.push('h = ' + h);
-        extra.push('d = ' + d);
-      } else if (shape === 'sphere') {
-        if (!isFinite(p1) || p1 <= 0) return invalid('Radius must be positive.');
-        const r = p1;
-        surface = 4 * Math.PI * r * r;
-        volume = (4 / 3) * Math.PI * r * r * r;
-        extra.push('r = ' + r);
-      } else if (shape === 'cylinder') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Radius and height must be positive.');
-        }
-        const r = p1, h = p2;
-        const baseArea = Math.PI * r * r;
-        const lateral = 2 * Math.PI * r * h;
-        surface = 2 * baseArea + lateral;
-        volume = baseArea * h;
-        extra.push('r = ' + r);
-        extra.push('h = ' + h);
-      } else if (shape === 'cone') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Radius and height must be positive.');
-        }
-        const r = p1, h = p2;
-        const slant = Math.sqrt(r * r + h * h);
-        const baseArea = Math.PI * r * r;
-        const lateral = Math.PI * r * slant;
-        surface = baseArea + lateral;
-        volume = (1 / 3) * baseArea * h;
-        extra.push('r = ' + r);
-        extra.push('h = ' + h);
-        extra.push('slant ≈ ' + slant);
-      } else {
-        return invalid('Unknown solid.');
-      }
-
-      const lines = [];
-      lines.push('Solid: ' + shapeEl.options[shapeEl.selectedIndex].text);
-      if (extra.length) lines.push(extra.join(', '));
-
-      if (surface != null) {
-        lines.push('Surface area ≈ ' + surface);
-      }
-      if (volume != null) {
-        lines.push('Volume ≈ ' + volume);
-      }
-
-      outEl.textContent = lines.join('\n');
-      setStatus('Geometry 3D: computed for ' + shape + '.');
-    }
-
-    function clearGeom3D() {
-      const p1El = document.getElementById('geom3dP1');
-      const p2El = document.getElementById('geom3dP2');
-      const p3El = document.getElementById('geom3dP3');
-      const outEl = document.getElementById('geom3dOutput');
-      if (p1El) p1El.value = '';
-      if (p2El) p2El.value = '';
-      if (p3El) p3El.value = '';
-      if (outEl) {
-        outEl.textContent = 'Select a solid, fill parameters, then hit "Compute 3D".';
-      }
-      setStatus('Geometry 3D: cleared.');
-    }
-
-    // =========================
-    // Programmer (base + bitwise)
-    // =========================
-    function programmerSyncFrom(source) {
-      const decEl = document.getElementById('progDec');
-      const binEl = document.getElementById('progBin');
-      const hexEl = document.getElementById('progHex');
-      const octEl = document.getElementById('progOct');
-      if (!decEl || !binEl || !hexEl || !octEl) return;
-
-      let raw = '';
-      let radix = 10;
-
-      if (source === 'dec') {
-        raw = decEl.value;
-        radix = 10;
-      } else if (source === 'bin') {
-        raw = binEl.value;
-        radix = 2;
-      } else if (source === 'hex') {
-        raw = hexEl.value;
-        radix = 16;
-      } else if (source === 'oct') {
-        raw = octEl.value;
-        radix = 8;
-      } else {
-        return;
-      }
-
-      let text = (raw || '').trim();
-      if (!text) {
-        // If the active field is cleared, just clear the others.
-        if (source !== 'dec') decEl.value = '';
-        if (source !== 'bin') binEl.value = '';
-        if (source !== 'hex') hexEl.value = '';
-        if (source !== 'oct') octEl.value = '';
-        return;
-      }
-
-      // Strip common base prefixes so users can type 0b, 0x, 0o.
-      if (radix === 2) text = text.replace(/^0b/i, '');
-      if (radix === 16) text = text.replace(/^0x/i, '');
-      if (radix === 8) text = text.replace(/^0o/i, '');
-
-      const dec = parseInt(text, radix);
-      if (Number.isNaN(dec)) {
-        setStatus('Programmer: invalid ' + source.toUpperCase() + ' value.');
-        return;
-      }
-
-      decEl.value = dec.toString(10);
-      binEl.value = dec.toString(2);
-      hexEl.value = dec.toString(16).toUpperCase();
-      octEl.value = dec.toString(8);
-
-      setStatus('Programmer: base conversion updated from ' + source.toUpperCase() + '.');
-    }
-
-    function programmerRunBitwise(op) {
-      const aEl = document.getElementById('progBitA');
-      const bEl = document.getElementById('progBitB');
-      const outEl = document.getElementById('progBitResult');
-      if (!aEl || !bEl || !outEl) return;
-
-      const aText = (aEl.value || '').trim();
-      const bText = (bEl.value || '').trim();
-
-      if (!aText) {
-        outEl.textContent = 'Enter operand A.';
-        setStatus('Programmer: operand A required.');
-        return;
-      }
-
-      const a = parseInt(aText, 10);
-      if (Number.isNaN(a)) {
-        outEl.textContent = 'Operand A is not a valid integer.';
-        setStatus('Programmer: invalid operand A.');
-        return;
-      }
-
-      let b = 0;
-      if (op !== 'not') {
-        if (!bText) {
-          outEl.textContent = 'Enter operand B.';
-          setStatus('Programmer: operand B required.');
-          return;
-        }
-        b = parseInt(bText, 10);
-        if (Number.isNaN(b)) {
-          outEl.textContent = 'Operand B is not a valid integer.';
-          setStatus('Programmer: invalid operand B.');
-          return;
-        }
-      }
-
-      let result;
-      let label;
-      switch (op) {
-        case 'and':
-          result = a & b;
-          label = 'A AND B';
-          break;
-        case 'or':
-          result = a | b;
-          label = 'A OR B';
-          break;
-        case 'xor':
-          result = a ^ b;
-          label = 'A XOR B';
-          break;
-        case 'not':
-          result = ~a;
-          label = 'NOT A';
-          break;
-        case 'shl':
-          result = a << b;
-          label = 'A << B';
-          break;
-        case 'shr':
-          result = a >> b;
-          label = 'A >> B';
-          break;
-        default:
-          return;
-      }
-
-      // Display as signed decimal, plus 32-bit unsigned hex/bin.
-      const unsigned = result >>> 0;
-      const hex = '0x' + unsigned.toString(16).toUpperCase();
-      const bin = unsigned.toString(2);
-
-      const lines = [];
-      lines.push('Operation: ' + label);
-      lines.push('A (dec) = ' + a);
-      if (op !== 'not') {
-        lines.push('B (dec) = ' + b);
-      }
-      lines.push('Result (dec) = ' + result);
-      lines.push('Result (hex, 32-bit) = ' + hex);
-      lines.push('Result (bin, 32-bit) = ' + bin);
-
-      outEl.textContent = lines.join('\n');
-      setStatus('Programmer: ' + label + ' computed.');
-    }
-
-    // =========================
-    // Solve tools
-    // =========================
-    function loadExprIntoDeriv() {
-      const el = document.getElementById('solveDerivExpr');
-      if (el) el.value = expression || display || "0";
-    }
-    function loadExprIntoIntegral() {
-      const el = document.getElementById('solveIntExpr');
-      if (el) el.value = expression || display || "0";
-    }
-    function loadExprIntoRoot() {
-      const el = document.getElementById('solveRootExpr');
-      if (el) el.value = expression || display || "0";
-    }
-
-    function solveDerivative() {
-      const exprEl = document.getElementById('solveDerivExpr');
-      const x0El = document.getElementById('solveDerivX0');
-      const outEl = document.getElementById('solveDerivOutput');
-      if (!exprEl || !x0El || !outEl) return;
-
-      const expr = exprEl.value.trim();
-      if (!expr) {
-        outEl.textContent = 'No expression.';
-        return;
-      }
-      const x0 = parseFloat(x0El.value);
-      if (!isFinite(x0)) {
-        outEl.textContent = 'Invalid x₀.';
-        return;
-      }
-
-      const h = 1e-5;
-      try {
-        const scope1 = { x: x0 + h, ans, mem: memory, memory };
-        const scope2 = { x: x0 - h, ans, mem: memory, memory };
-        const f1 = math.evaluate(expr, scope1);
-        const f2 = math.evaluate(expr, scope2);
-        const d = (f1 - f2) / (2 * h);
-
-        outEl.textContent =
-          'f(x) = ' + expr + '\n' +
-          'x₀   = ' + x0 + '\n' +
-          "h    = " + h + '\n\n' +
-          'f(x₀ + h) ≈ ' + f1 + '\n' +
-          'f(x₀ - h) ≈ ' + f2 + '\n\n' +
-          "f'(x₀) ≈ " + d;
-      } catch (e) {
-        outEl.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function solveIntegral() {
-      const exprEl = document.getElementById('solveIntExpr');
-      const aEl = document.getElementById('solveIntA');
-      const bEl = document.getElementById('solveIntB');
-      const outEl = document.getElementById('solveIntOutput');
-      if (!exprEl || !aEl || !bEl || !outEl) return;
-
-      const expr = exprEl.value.trim();
-      if (!expr) {
-        outEl.textContent = 'No expression.';
-        return;
-      }
-      const a = parseFloat(aEl.value);
-      const b = parseFloat(bEl.value);
-      if (!isFinite(a) || !isFinite(b) || a === b) {
-        outEl.textContent = 'Invalid interval [a, b].';
-        return;
-      }
-
-      const n = 400; // even
-      const h = (b - a) / n;
-      let sum = 0;
-      try {
-        for (let i = 0; i <= n; i++) {
-          const x = a + i * h;
-          const scope = { x, ans, mem: memory, memory };
-          const fx = math.evaluate(expr, scope);
-          const coeff = (i === 0 || i === n) ? 1 : (i % 2 === 0 ? 2 : 4);
-          sum += coeff * fx;
-        }
-        const integral = (h / 3) * sum;
-        outEl.textContent =
-          'Integral of f(x) = ' + expr + '\n' +
-          'over [' + a + ', ' + b + '] (Simpson, n=' + n + '):\n\n' +
-          '≈ ' + integral;
-      } catch (e) {
-        outEl.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function solveRoot() {
-      const exprEl = document.getElementById('solveRootExpr');
-      const guessEl = document.getElementById('solveRootGuess');
-      const outEl = document.getElementById('solveRootOutput');
-      if (!exprEl || !guessEl || !outEl) return;
-
-      const expr = exprEl.value.trim();
-      if (!expr) {
-        outEl.textContent = 'No expression.';
-        return;
-      }
-      let x = parseFloat(guessEl.value);
-      if (!isFinite(x)) {
-        outEl.textContent = 'Invalid initial guess.';
-        return;
-      }
-
-      const maxIter = 30;
-      const tol = 1e-8;
-      const h = 1e-5;
-      const lines = [];
-      lines.push('f(x) = ' + expr);
-      lines.push('x₀   = ' + x);
-      lines.push('max iterations = ' + maxIter);
-      lines.push('tolerance      = ' + tol);
-      lines.push('');
-
-      try {
-        for (let i = 0; i < maxIter; i++) {
-          const scope = { x, ans, mem: memory, memory };
-          const fx = math.evaluate(expr, scope);
-
-          const scope1 = { x: x + h, ans, mem: memory, memory };
-          const scope2 = { x: x - h, ans, mem: memory, memory };
-          const f1 = math.evaluate(expr, scope1);
-          const f2 = math.evaluate(expr, scope2);
-          const dfdx = (f1 - f2) / (2 * h);
-
-          lines.push(
-            'Iter ' + i +
-            ': x = ' + x +
-            ', f(x) = ' + fx +
-            ', f\'(x) ≈ ' + dfdx
-          );
-
-          if (Math.abs(fx) < tol) {
-            lines.push('');
-            lines.push('Converged: |f(x)| < tol');
-            lines.push('Root ≈ ' + x);
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-          if (!isFinite(dfdx) || Math.abs(dfdx) < 1e-12) {
-            lines.push('');
-            lines.push('Derivative too small or invalid, aborting.');
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-
-          const xNext = x - fx / dfdx;
-          if (!isFinite(xNext)) {
-            lines.push('');
-            lines.push('Next x not finite, aborting.');
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-
-          if (Math.abs(xNext - x) < tol) {
-            x = xNext;
-            lines.push('');
-            lines.push('Step below tol, treating as converged.');
-            lines.push('Root ≈ ' + x);
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-
-          x = xNext;
-        }
-
-        lines.push('');
-        lines.push('Max iterations reached. Last x ≈ ' + x);
-        outEl.textContent = lines.join('\n');
-      } catch (e) {
-        outEl.textContent = 'Error during iteration: ' + e.message;
-      }
-    }
-  </script>
+  <script src="nerdlab-calc.js"></script>
 </body>
 </html>
