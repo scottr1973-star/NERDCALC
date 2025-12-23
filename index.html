@@ -2,274 +2,448 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>NerdLab Calc v2 · Ultimate Nerd Calculator</title>
+  <title>NerdLab Calc v2 · Precision Calculator + Graphs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Tailwind CDN (for utility classes) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['system-ui','-apple-system','SF Pro Text','Inter','sans-serif'],
-            mono: ['JetBrains Mono','SF Mono','ui-monospace','Menlo','monospace'],
-          }
-        }
-      }
-    }
-  </script>
 
+  <!-- Chart.js + math.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
 
   <style>
     body {
-      background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
-      color: #e5e7eb;
-    }
-    .fc-card {
       background: radial-gradient(circle at top left, rgba(56,189,248,0.08), rgba(15,23,42,0.98));
-      border-radius: 1.25rem;
-      border: 1px solid rgba(148,163,184,0.4);
-      box-shadow: 0 24px 60px rgba(15,23,42,0.9), 0 0 32px rgba(59,130,246,0.28);
-      backdrop-filter: blur(24px);
     }
+
+    /* Small, subtle glow for cards and buttons */
+    .fc-glow {
+      box-shadow:
+        0 0 0 1px rgba(148,163,184,0.15),
+        0 8px 30px rgba(0,0,0,0.35),
+        0 0 60px rgba(56,189,248,0.08);
+    }
+
+    .fc-card {
+      background: rgba(2,6,23,0.72);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 24px;
+    }
+
     .fc-card-soft {
-      background: radial-gradient(circle at top left, rgba(148,163,184,0.06), rgba(15,23,42,0.97));
-      border-radius: 1.25rem;
-      border: 1px solid rgba(51,65,85,0.9);
-      box-shadow: 0 18px 40px rgba(15,23,42,0.9), 0 0 24px rgba(59,130,246,0.18);
-      backdrop-filter: blur(20px);
+      background: rgba(2,6,23,0.55);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(148,163,184,0.14);
+      border-radius: 20px;
     }
-    .fc-pill {
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.6);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.95));
-      box-shadow: 0 12px 30px rgba(15,23,42,0.9);
-    }
-    .calc-btn-main {
-      background: radial-gradient(circle at top, #38bdf8, #2563eb 48%, #111827 100%);
-      border: 1px solid rgba(191,219,254,0.85);
-      box-shadow: 0 16px 36px rgba(15,23,42,1), 0 0 18px rgba(56,189,248,0.9);
-      color: #020617;
-      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
-    }
-    .calc-btn-main:active { transform: translateY(1px) scale(0.98); }
+
     .calc-btn {
-      background: radial-gradient(circle at top, #111827, #020617 60%, #020617 100%);
-      border: 1px solid rgba(30,64,175,0.9);
-      color: #e5e7eb;
-      transition: transform 0.08s ease-out;
+      background: rgba(15,23,42,0.78);
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 8px 18px rgba(0,0,0,0.35);
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, filter 0.08s ease-out;
     }
-    .calc-btn:active { transform: translateY(1px) scale(0.98); }
-    .tab-pill { border-radius: 999px; transition: all 0.16s ease-out; cursor: pointer; white-space: nowrap; font-size: 0.75rem; }
-    .tab-pill-active { border-color: rgba(96,165,250,0.9); background: rgba(59,130,246,0.25); color: #e5e7eb; }
-    .tab-pill-inactive { color: #9ca3af; }
-    
-    /* Responsive Scale Fix */
+    .calc-btn:hover {
+      filter: brightness(1.08);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 10px 22px rgba(0,0,0,0.42),
+        0 0 0 1px rgba(56,189,248,0.18);
+      transform: translateY(-1px);
+    }
+    .calc-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 6px 14px rgba(0,0,0,0.38);
+    }
+
+    .calc-op {
+      background: rgba(30,41,59,0.78);
+      border: 1px solid rgba(148,163,184,0.20);
+    }
+
+    .calc-accent {
+      background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(99,102,241,0.20));
+      border: 1px solid rgba(56,189,248,0.25);
+    }
+
+    .calc-danger {
+      background: linear-gradient(135deg, rgba(244,63,94,0.25), rgba(239,68,68,0.18));
+      border: 1px solid rgba(244,63,94,0.25);
+    }
+
+    .calc-warn {
+      background: linear-gradient(135deg, rgba(251,191,36,0.22), rgba(245,158,11,0.14));
+      border: 1px solid rgba(251,191,36,0.22);
+    }
+
+    .soft-sep {
+      border-top: 1px solid rgba(148,163,184,0.14);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.28rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(2,6,23,0.55);
+      border: 1px solid rgba(148,163,184,0.16);
+      color: rgba(226,232,240,0.9);
+      font-size: 0.75rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* Chart container makes canvas responsive */
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 280px;
+    }
+    @media (min-width: 1024px) {
+      .chart-wrap { height: 320px; }
+    }
+
+    /* Pretty thin scrollbar (Chrome/Edge/Safari) */
+    .scrollbar-thin::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: rgba(2,6,23,0.4);
+      border-radius: 999px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(75,85,99,0.8);
+      border-radius: 999px;
+    }
+
+    /* --- Mobile portrait overflow fix ---
+       The UI is intentionally wide (two-panel layouts). Previously, overflow-x-hidden
+       clipped the right side in portrait. We keep the layout identical, but allow
+       horizontal scrolling when needed. Background glows stay clipped.
+    */
+    .flow-hscroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
+
+  </style>
+  <style>
+    /* FLUID SCALING for Mobile Portrait:
+      Instead of a fixed pixel size, we use 'vw' (viewport width).
+      2.5vw means the base size is 2.5% of the screen width.
+      This forces the entire calculator to shrink proportionally 
+      to fit exactly within the width of any phone screen.
+    */
     @media (max-width: 480px) {
-      html { font-size: 2.5vw; }
-      .main-grid { grid-template-columns: 1fr !important; }
+      html {
+        font-size: 2.5vw; 
+      }
     }
   </style>
 </head>
 
-<body class="min-h-screen text-slate-100 antialiased overflow-x-hidden p-2 md:p-6">
-  <div class="max-w-6xl mx-auto space-y-4">
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-700 flex items-center justify-center font-bold text-slate-950">ƒ</div>
-        <h1 class="text-xl font-bold">NerdLab v2</h1>
+<body class="min-h-screen text-slate-100 antialiased overflow-x-hidden">
+  <div class="relative min-h-screen flex flex-col items-center px-0 py-4 md:px-6 md:py-8 overflow-x-auto flow-hscroll">
+    <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute -top-40 -left-24 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl"></div>
+      <div class="absolute top-40 -right-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl"></div>
+      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 h-72 w-[32rem] rounded-full bg-sky-400/10 blur-3xl"></div>
+    </div>
+
+    <header class="w-full max-w-6xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-3 md:px-0">
+      <div class="flex items-center gap-4">
+        <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 shadow-lg shadow-sky-500/40 flex items-center justify-center">
+          <span class="font-mono font-bold text-xl text-slate-950">ƒ</span>
+        </div>
+        <div class="space-y-1">
+          <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">
+            NerdLab Calc <span class="text-sky-300/90">v2</span>
+          </h1>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge">
+              <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
+              Precision
+            </span>
+            <span class="badge">
+              <span class="inline-flex h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.9)]"></span>
+              Graphs
+            </span>
+            <span class="badge">
+              <span class="inline-flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.9)]"></span>
+              Stats
+            </span>
+          </div>
+        </div>
       </div>
-      <div class="fc-pill px-4 py-1 text-xs font-mono uppercase tracking-widest text-emerald-400">Core: Math.js</div>
+
+      <div class="flex flex-wrap gap-2">
+        <button id="btn-reset" class="calc-btn px-4 py-2 rounded-xl text-sm font-semibold">
+          Reset
+        </button>
+        <button id="btn-export" class="calc-btn px-4 py-2 rounded-xl text-sm font-semibold calc-accent">
+          Export JSON
+        </button>
+      </div>
     </header>
 
-    <main class="main-grid grid grid-cols-[1.1fr_1.2fr] gap-4">
-      <section class="fc-card p-4 space-y-4">
-        <div class="flex justify-between text-[10px] font-mono text-slate-400">
-            <div id="angle-mode-pill" class="bg-slate-900 px-2 py-0.5 rounded border border-slate-700">RAD</div>
-            <div id="status-line">Ready.</div>
-        </div>
-        <div class="bg-slate-950/80 border border-slate-700 rounded-xl p-4 text-right">
-            <div id="expression-display" class="text-xs text-slate-500 font-mono h-4"></div>
-            <div id="main-display" class="text-4xl font-mono truncate">0</div>
-        </div>
-        
-        <div class="grid grid-cols-4 gap-2">
-            <button data-key="mode-clear" class="calc-btn p-3 rounded-lg text-rose-400">AC</button>
-            <button data-key="mode-del" class="calc-btn p-3 rounded-lg">DEL</button>
-            <button data-func="ans" class="calc-btn p-3 rounded-lg text-sky-400">ANS</button>
-            <button data-op="÷" class="calc-btn p-3 rounded-lg text-sky-400">÷</button>
-            
-            <button data-key="7" class="calc-btn p-3 rounded-lg">7</button>
-            <button data-key="8" class="calc-btn p-3 rounded-lg">8</button>
-            <button data-key="9" class="calc-btn p-3 rounded-lg">9</button>
-            <button data-op="×" class="calc-btn p-3 rounded-lg text-sky-400">×</button>
-            
-            <button data-key="4" class="calc-btn p-3 rounded-lg">4</button>
-            <button data-key="5" class="calc-btn p-3 rounded-lg">5</button>
-            <button data-key="6" class="calc-btn p-3 rounded-lg">6</button>
-            <button data-op="-" class="calc-btn p-3 rounded-lg text-sky-400">−</button>
-            
-            <button data-key="1" class="calc-btn p-3 rounded-lg">1</button>
-            <button data-key="2" class="calc-btn p-3 rounded-lg">2</button>
-            <button data-key="3" class="calc-btn p-3 rounded-lg">3</button>
-            <button data-op="+" class="calc-btn p-3 rounded-lg text-sky-400">+</button>
-            
-            <button data-key="0" class="calc-btn p-3 rounded-lg">0</button>
-            <button data-key="." class="calc-btn p-3 rounded-lg">.</button>
-            <button data-key="(" class="calc-btn p-3 rounded-lg">(</button>
-            <button data-eval="=" class="calc-btn-main p-3 rounded-lg font-bold">=</button>
+    <main class="w-full max-w-6xl grid gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)] items-stretch px-1 md:px-0">
+      <!-- LEFT: Calculator + History -->
+      <section class="fc-card fc-glow p-3 md:p-5">
+        <div class="flex flex-col gap-3">
+          <div class="fc-card-soft p-3 md:p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="space-y-1 min-w-0">
+                <div class="text-xs uppercase tracking-widest text-slate-400">Display</div>
+                <div id="main-display" class="w-full text-3xl md:text-4xl font-semibold tracking-tight leading-tight overflow-x-auto scrollbar-thin">
+                  0
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <div class="badge">
+                  <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.9)]"></span>
+                  <span id="angle-mode">DEG</span>
+                </div>
+                <div class="badge">
+                  <span class="inline-flex h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.9)]"></span>
+                  <span id="precision-mode">Auto</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="soft-sep my-3"></div>
+
+            <div class="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-2 md:gap-3 mt-2">
+              <div class="grid grid-rows-[auto_1fr] gap-2">
+                <div class="grid grid-cols-4 gap-1.5 text-xs">
+                  <button data-key="mode-deg" class="calc-btn px-2 py-1.5 rounded-lg font-mono">DEG</button>
+                  <button data-key="mode-rad" class="calc-btn px-2 py-1.5 rounded-lg font-mono opacity-70">RAD</button>
+                  <button data-key="mode-clear" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-rose-200">AC</button>
+                  <button data-key="mode-del" class="calc-btn px-2 py-1.5 rounded-lg font-mono text-amber-200">DEL</button>
+                </div>
+                <div class="grid grid-cols-4 grid-rows-5 gap-1.5 text-base md:text-lg">
+                  <button data-key="7" class="calc-btn rounded-xl py-3">7</button>
+                  <button data-key="8" class="calc-btn rounded-xl py-3">8</button>
+                  <button data-key="9" class="calc-btn rounded-xl py-3">9</button>
+                  <button data-key="/" class="calc-btn calc-op rounded-xl py-3">÷</button>
+
+                  <button data-key="4" class="calc-btn rounded-xl py-3">4</button>
+                  <button data-key="5" class="calc-btn rounded-xl py-3">5</button>
+                  <button data-key="6" class="calc-btn rounded-xl py-3">6</button>
+                  <button data-key="*" class="calc-btn calc-op rounded-xl py-3">×</button>
+
+                  <button data-key="1" class="calc-btn rounded-xl py-3">1</button>
+                  <button data-key="2" class="calc-btn rounded-xl py-3">2</button>
+                  <button data-key="3" class="calc-btn rounded-xl py-3">3</button>
+                  <button data-key="-" class="calc-btn calc-op rounded-xl py-3">−</button>
+
+                  <button data-key="0" class="calc-btn rounded-xl py-3">0</button>
+                  <button data-key="." class="calc-btn rounded-xl py-3">.</button>
+                  <button data-key="=" class="calc-btn calc-accent rounded-xl py-3 font-semibold">=</button>
+                  <button data-key="+" class="calc-btn calc-op rounded-xl py-3">+</button>
+
+                  <button data-key="(" class="calc-btn rounded-xl py-3">(</button>
+                  <button data-key=")" class="calc-btn rounded-xl py-3">)</button>
+                  <button data-key="%" class="calc-btn rounded-xl py-3">%</button>
+                  <button data-key="^" class="calc-btn rounded-xl py-3">^</button>
+                </div>
+              </div>
+
+              <div class="grid grid-rows-[auto_1fr] gap-2">
+                <div class="grid grid-cols-2 gap-1.5 text-xs">
+                  <button data-key="fn-sin" class="calc-btn px-2 py-1.5 rounded-lg font-mono">sin</button>
+                  <button data-key="fn-cos" class="calc-btn px-2 py-1.5 rounded-lg font-mono">cos</button>
+                  <button data-key="fn-tan" class="calc-btn px-2 py-1.5 rounded-lg font-mono">tan</button>
+                  <button data-key="fn-log" class="calc-btn px-2 py-1.5 rounded-lg font-mono">log</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-1.5 text-sm">
+                  <button data-key="fn-ln" class="calc-btn rounded-xl py-2 font-mono">ln</button>
+                  <button data-key="fn-sqrt" class="calc-btn rounded-xl py-2 font-mono">√</button>
+
+                  <button data-key="fn-abs" class="calc-btn rounded-xl py-2 font-mono">abs</button>
+                  <button data-key="fn-pi" class="calc-btn rounded-xl py-2 font-mono">π</button>
+
+                  <button data-key="fn-e" class="calc-btn rounded-xl py-2 font-mono">e</button>
+                  <button data-key="fn-fact" class="calc-btn rounded-xl py-2 font-mono">x!</button>
+
+                  <button data-key="fn-inv" class="calc-btn calc-warn rounded-xl py-2 font-mono">1/x</button>
+                  <button data-key="fn-neg" class="calc-btn rounded-xl py-2 font-mono">±</button>
+
+                  <button data-key="fn-rand" class="calc-btn rounded-xl py-2 font-mono">rand</button>
+                  <button data-key="fn-mem" class="calc-btn rounded-xl py-2 font-mono">M+</button>
+
+                  <button data-key="fn-mr" class="calc-btn rounded-xl py-2 font-mono">MR</button>
+                  <button data-key="fn-mc" class="calc-btn calc-danger rounded-xl py-2 font-mono">MC</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fc-card-soft p-3 md:p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-xs uppercase tracking-widest text-slate-400">History</div>
+              <div class="flex items-center gap-2">
+                <span class="badge">
+                  <span class="inline-flex h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.9)]"></span>
+                  <span id="hist-count">0</span>
+                </span>
+                <button id="btn-clear-history" class="calc-btn px-3 py-1.5 rounded-xl text-xs font-semibold">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div id="history-list" class="mt-3 max-h-44 md:max-h-56 overflow-y-auto scrollbar-thin space-y-2 pr-1">
+              <!-- history items -->
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="fc-card-soft p-4 flex flex-col gap-4">
-        <div class="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800">
-            <button class="tab-pill tab-pill-active px-4 py-1" data-tab-target="console">Console</button>
-            <button class="tab-pill tab-pill-inactive px-4 py-1" data-tab-target="graph">Graph</button>
-            <button class="tab-pill tab-pill-inactive px-4 py-1" data-tab-target="matrix">Matrix</button>
-            <button class="tab-pill tab-pill-inactive px-4 py-1" data-tab-target="solve">Solve</button>
-        </div>
+      <!-- RIGHT: Graphs + Stats -->
+      <section class="fc-card fc-glow p-3 md:p-5">
+        <div class="flex flex-col gap-3">
+          <div class="fc-card-soft p-3 md:p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div class="space-y-1 min-w-0">
+                <div class="text-xs uppercase tracking-widest text-slate-400">Graph</div>
+                <div class="text-sm text-slate-300">
+                  f(x) = <span id="graph-fx" class="font-mono text-sky-300">sin(x)</span>
+                </div>
+              </div>
 
-        <div id="tab-content" class="flex-1">
-            <div id="tab-console" class="space-y-4">
-                <textarea id="consoleInput" class="w-full h-32 bg-slate-900 border border-slate-700 rounded-lg p-3 font-mono text-sm" placeholder="a = 5&#10;b = 10&#10;sqrt(a^2 + b^2)"></textarea>
-                <button onclick="runConsole()" class="bg-sky-600 px-4 py-2 rounded-lg text-sm">Run Expression</button>
-                <pre id="consoleOutput" class="bg-black p-3 rounded-lg text-emerald-400 font-mono text-xs min-h-[50px]"></pre>
+              <div class="flex flex-wrap justify-end gap-2">
+                <button id="btn-graph-sin" class="calc-btn px-3 py-1.5 rounded-xl text-xs font-semibold">sin</button>
+                <button id="btn-graph-cos" class="calc-btn px-3 py-1.5 rounded-xl text-xs font-semibold">cos</button>
+                <button id="btn-graph-tan" class="calc-btn px-3 py-1.5 rounded-xl text-xs font-semibold">tan</button>
+                <button id="btn-graph-custom" class="calc-btn px-3 py-1.5 rounded-xl text-xs font-semibold calc-accent">custom</button>
+              </div>
             </div>
 
-            <div id="tab-graph" class="hidden space-y-4">
-                <input id="graphExpr" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="sin(x) * x">
-                <button onclick="plotGraph()" class="bg-sky-600 px-4 py-2 rounded-lg text-sm">Plot</button>
-                <div class="h-48 bg-slate-950 rounded-lg"><canvas id="graphCanvas"></canvas></div>
+            <div class="mt-3 chart-wrap">
+              <canvas id="graph-canvas"></canvas>
             </div>
 
-            <div id="tab-matrix" class="hidden space-y-4">
-                <textarea id="matrixA" class="w-full h-24 bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-xs" placeholder="[1, 2]&#10;[3, 4]"></textarea>
-                <button onclick="matrixDet()" class="bg-violet-600 px-4 py-2 rounded-lg text-xs">Determinant</button>
-                <pre id="matrixOutput" class="bg-black p-2 rounded text-xs text-emerald-400"></pre>
+            <div class="mt-3 flex flex-col gap-2">
+              <div class="text-xs uppercase tracking-widest text-slate-400">Domain</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="fc-card-soft p-2">
+                  <div class="text-xs text-slate-400">Min</div>
+                  <input id="domain-min" type="number" value="-10"
+                    class="w-full bg-transparent outline-none font-mono text-slate-200" />
+                </div>
+                <div class="fc-card-soft p-2">
+                  <div class="text-xs text-slate-400">Max</div>
+                  <input id="domain-max" type="number" value="10"
+                    class="w-full bg-transparent outline-none font-mono text-slate-200" />
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button id="btn-domain-apply" class="calc-btn px-4 py-2 rounded-xl text-sm font-semibold calc-accent">
+                  Apply
+                </button>
+                <button id="btn-domain-reset" class="calc-btn px-4 py-2 rounded-xl text-sm font-semibold">
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="fc-card-soft p-3 md:p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-xs uppercase tracking-widest text-slate-400">Stats</div>
+              <div class="badge">
+                <span class="inline-flex h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.9)]"></span>
+                <span id="stats-mode">Session</span>
+              </div>
             </div>
 
-            <div id="tab-solve" class="hidden space-y-4">
-                <div class="text-xs text-slate-400">Newton's Method Root Finder</div>
-                <input id="solveRootExpr" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2" placeholder="x^2 - 2">
-                <button onclick="solveRoot()" class="bg-emerald-600 px-4 py-2 rounded-lg text-sm">Find Root</button>
-                <pre id="solveRootOutput" class="bg-black p-2 rounded text-xs text-emerald-400"></pre>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="fc-card-soft p-3">
+                <div class="text-xs text-slate-400">Count</div>
+                <div id="stat-count" class="text-lg font-semibold">0</div>
+              </div>
+              <div class="fc-card-soft p-3">
+                <div class="text-xs text-slate-400">Mean</div>
+                <div id="stat-mean" class="text-lg font-semibold">0</div>
+              </div>
+              <div class="fc-card-soft p-3">
+                <div class="text-xs text-slate-400">Min</div>
+                <div id="stat-min" class="text-lg font-semibold">0</div>
+              </div>
+              <div class="fc-card-soft p-3">
+                <div class="text-xs text-slate-400">Max</div>
+                <div id="stat-max" class="text-lg font-semibold">0</div>
+              </div>
             </div>
+
+            <div class="mt-3 soft-sep pt-3">
+              <div class="text-xs uppercase tracking-widest text-slate-400 mb-2">Recent Results</div>
+              <div id="recent-results" class="flex border border-slate-700/80 rounded-full bg-slate-950/80 p-1 overflow-x-auto scrollbar-thin">
+                <!-- chips -->
+              </div>
+            </div>
+          </div>
+
+          <div class="fc-card-soft p-3 md:p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-xs uppercase tracking-widest text-slate-400">Custom f(x)</div>
+              <span class="badge">
+                <span class="inline-flex h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]"></span>
+                <span>y =</span>
+              </span>
+            </div>
+
+            <div class="mt-3 flex flex-col gap-2">
+              <input id="custom-fx" type="text" value="sin(x)"
+                class="w-full bg-slate-950/60 border border-slate-700/70 rounded-xl px-3 py-2 font-mono text-sm outline-none focus:ring-2 focus:ring-sky-500/50" />
+              <div class="flex items-center gap-2">
+                <button id="btn-custom-apply" class="calc-btn px-4 py-2 rounded-xl text-sm font-semibold calc-accent">
+                  Graph
+                </button>
+                <button id="btn-custom-help" class="calc-btn px-4 py-2 rounded-xl text-sm font-semibold">
+                  Examples
+                </button>
+              </div>
+              <div id="custom-help" class="hidden text-xs text-slate-400 leading-relaxed">
+                Try: <span class="font-mono text-slate-200">x^2</span>,
+                <span class="font-mono text-slate-200">sin(x)*x</span>,
+                <span class="font-mono text-slate-200">log(abs(x)+1)</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
+
+    <footer class="w-full max-w-6xl mt-4 text-xs text-slate-400 px-3 md:px-0">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <span class="text-slate-300 font-semibold">NerdLab</span> · Calc v2
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="badge">
+            <span class="inline-flex h-2 w-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.9)]"></span>
+            <span>Math: <span class="text-emerald-300">math.js</span> · Graph: <span class="text-sky-300">Chart.js</span></span>
+          </span>
+          <span class="badge">
+            <span class="inline-flex h-2 w-2 rounded-full bg-fuchsia-400 shadow-[0_0_10px_rgba(232,121,249,0.9)]"></span>
+            <span>UI: Tailwind</span>
+          </span>
+        </div>
+      </div>
+    </footer>
   </div>
 
-  <script>
-    // CORE LOGIC
-    let expression = "";
-    let display = "0";
-    let ans = 0;
-
-    const mainEl = document.getElementById('main-display');
-    const exprEl = document.getElementById('expression-display');
-    const statusEl = document.getElementById('status-line');
-
-    function updateUI() {
-        mainEl.textContent = display || "0";
-        exprEl.textContent = expression;
-    }
-
-    document.querySelectorAll('[data-key]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const val = btn.dataset.key;
-            if (val === 'mode-clear') { expression = ""; display = "0"; }
-            else if (val === 'mode-del') { expression = expression.slice(0, -1); display = expression; }
-            else { expression += val; display = expression; }
-            updateUI();
-        });
-    });
-
-    document.querySelectorAll('[data-op]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const op = btn.dataset.op.replace('×', '*').replace('÷', '/');
-            expression += op;
-            display = expression;
-            updateUI();
-        });
-    });
-
-    document.querySelector('[data-eval="="]').addEventListener('click', () => {
-        try {
-            ans = math.evaluate(expression || "0", { ans });
-            display = ans.toString();
-            expression = "";
-            updateUI();
-        } catch (e) {
-            statusEl.textContent = "Error";
-            setTimeout(() => statusEl.textContent = "Ready.", 2000);
-        }
-    });
-
-    // WORKBENCH LOGIC
-    function runConsole() {
-        const input = document.getElementById('consoleInput').value;
-        const out = document.getElementById('consoleOutput');
-        try {
-            const result = math.evaluate(input, { ans });
-            out.textContent = result.toString();
-        } catch (e) { out.textContent = "Error: " + e.message; }
-    }
-
-    let graphChart = null;
-    function plotGraph() {
-        const expr = document.getElementById('graphExpr').value;
-        const ctx = document.getElementById('graphCanvas').getContext('2d');
-        const xValues = math.range(-10, 10, 0.5).toArray();
-        const yValues = xValues.map(x => {
-            try { return math.evaluate(expr, { x }); } catch(e) { return null; }
-        });
-
-        if (graphChart) graphChart.destroy();
-        graphChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: xValues,
-                datasets: [{ label: 'f(x)', data: yValues, borderColor: '#38bdf8', tension: 0.4 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-
-    function matrixDet() {
-        const input = document.getElementById('matrixA').value;
-        const out = document.getElementById('matrixOutput');
-        try {
-            const m = math.evaluate(input);
-            out.textContent = "det = " + math.det(m);
-        } catch(e) { out.textContent = "Invalid Matrix"; }
-    }
-
-    function solveRoot() {
-        const expr = document.getElementById('solveRootExpr').value;
-        const out = document.getElementById('solveRootOutput');
-        try {
-            // Simple Newton's Approximation
-            let x = 1.0;
-            for(let i=0; i<10; i++) {
-                let f = math.evaluate(expr, { x });
-                let df = (math.evaluate(expr, { x: x + 0.001 }) - f) / 0.001;
-                x = x - f/df;
-            }
-            out.textContent = "Root ≈ " + x.toFixed(6);
-        } catch(e) { out.textContent = "Error solving"; }
-    }
-
-    // Tab Switching
-    document.querySelectorAll('[data-tab-target]').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.tab-pill').forEach(p => p.classList.replace('tab-pill-active', 'tab-pill-inactive'));
-            tab.classList.replace('tab-pill-inactive', 'tab-pill-active');
-            document.querySelectorAll('#tab-content > div').forEach(div => div.classList.add('hidden'));
-            document.getElementById('tab-' + tab.dataset.tabTarget).classList.remove('hidden');
-        });
-    });
-  </script>
+  <script src="nerdlab-calc.js"></script>
 </body>
 </html>
