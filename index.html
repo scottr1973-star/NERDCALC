@@ -138,7 +138,7 @@
 </head>
 
 <body class="min-h-screen text-slate-100 antialiased">
-  <div class="relative min-h-screen flex flex-col items-center px-3 py-4 md:px-6 md:py-8 overflow-x-hidden">
+  <div class="relative min-h-screen flex flex-col items-center px-3 py-4 md:px-6 md:py-8 overflow-x-auto md:overflow-x-hidden">
     <!-- background orbs -->
     <div class="pointer-events-none fixed inset-0 -z-10">
       <div class="absolute -top-40 -left-24 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl"></div>
@@ -1181,23 +1181,17 @@ Enter A and B, then choose an operation.</pre>
             }
           },
           plugins: {
-            legend: {
-              labels: { color: '#e5e7eb' }
-            }
+            legend: { labels: { color: '#cbd5e1' } }
           }
         }
       });
 
-      setStatus('Plotted f(x).');
+      setStatus('Graph plotted.');
     }
 
     function resetGraph() {
-      const exprInput = document.getElementById('graphExpr');
-      const xminEl = document.getElementById('graphXMin');
-      const xmaxEl = document.getElementById('graphXMax');
-      if (exprInput) exprInput.value = '';
-      if (xminEl) xminEl.value = '-10';
-      if (xmaxEl) xmaxEl.value = '10';
+      const canvas = document.getElementById('graphCanvas');
+      if (!canvas) return;
       if (graphChart) {
         graphChart.destroy();
         graphChart = null;
@@ -1207,128 +1201,111 @@ Enter A and B, then choose an operation.</pre>
 
     function loadExprIntoGraph() {
       const exprInput = document.getElementById('graphExpr');
-      if (exprInput) {
-        const exprVal = expression || display || "0";
-        exprInput.value = exprVal;
-      }
+      if (exprInput) exprInput.value = expression || display || "";
     }
 
     // =========================
-    // Matrix Lab
+    // Matrix tools
     // =========================
     function parseMatrix(text) {
-      const rows = text.split('\n').map(r => r.trim()).filter(r => r.length > 0);
-      if (!rows.length) return null;
-      const matrix = rows.map(row =>
-        row.split(/[, \t]+/).map(x => parseFloat(x)).filter(v => !Number.isNaN(v))
-      );
-      return math.matrix(matrix);
-    }
-
-    function formatMatrix(m) {
-      try {
-        if (math.typeOf(m) === 'Matrix') return m.toString();
-        return String(m);
-      } catch (e) {
-        return String(m);
-      }
+      const rows = text.trim().split('\n').filter(r => r.trim().length > 0);
+      return rows.map(r => r.split(/[\s,]+/).filter(x => x.length > 0).map(Number));
     }
 
     function matrixDet() {
-      const aText = document.getElementById('matrixA').value;
-      const out = document.getElementById('matrixOutput');
+      const aEl = document.getElementById('matrixA');
+      const outEl = document.getElementById('matrixOutput');
+      if (!aEl || !outEl) return;
+
       try {
-        const A = parseMatrix(aText);
-        if (!A) {
-          out.textContent = 'No matrix A.';
-          return;
-        }
-        const d = math.det(A);
-        out.textContent = 'det(A) = ' + d.toString();
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
+        const A = parseMatrix(aEl.value);
+        const det = math.det(A);
+        outEl.textContent = 'det(A) = ' + formatConsoleResult(det);
+        setStatus('Matrix det computed.');
+      } catch (err) {
+        outEl.textContent = 'Error: ' + err.message;
+        setStatus('Matrix error.');
       }
     }
 
     function matrixInv() {
-      const aText = document.getElementById('matrixA').value;
-      const out = document.getElementById('matrixOutput');
+      const aEl = document.getElementById('matrixA');
+      const outEl = document.getElementById('matrixOutput');
+      if (!aEl || !outEl) return;
+
       try {
-        const A = parseMatrix(aText);
-        if (!A) {
-          out.textContent = 'No matrix A.';
-          return;
-        }
+        const A = parseMatrix(aEl.value);
         const inv = math.inv(A);
-        out.textContent = 'inv(A) =\n' + formatMatrix(inv);
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
+        outEl.textContent = 'inv(A) =\n' + inv.toString();
+        setStatus('Matrix inv computed.');
+      } catch (err) {
+        outEl.textContent = 'Error: ' + err.message;
+        setStatus('Matrix error.');
       }
     }
 
     function matrixMul() {
-      const aText = document.getElementById('matrixA').value;
-      const bText = document.getElementById('matrixB').value;
-      const out = document.getElementById('matrixOutput');
+      const aEl = document.getElementById('matrixA');
+      const bEl = document.getElementById('matrixB');
+      const outEl = document.getElementById('matrixOutput');
+      if (!aEl || !bEl || !outEl) return;
+
       try {
-        const A = parseMatrix(aText);
-        const B = parseMatrix(bText);
-        if (!A || !B) {
-          out.textContent = 'Need both A and B.';
-          return;
-        }
-        const C = math.multiply(A, B);
-        out.textContent = 'A × B =\n' + formatMatrix(C);
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
+        const A = parseMatrix(aEl.value);
+        const B = parseMatrix(bEl.value);
+        const prod = math.multiply(A, B);
+        outEl.textContent = 'A × B =\n' + prod.toString();
+        setStatus('Matrix multiply computed.');
+      } catch (err) {
+        outEl.textContent = 'Error: ' + err.message;
+        setStatus('Matrix error.');
       }
     }
 
     // =========================
     // Stats
     // =========================
-    function parseDataSeries(text) {
-      const tokens = text.split(/[,\s]+/).map(x => x.trim()).filter(x => x.length > 0);
-      const values = tokens.map(t => parseFloat(t)).filter(v => !Number.isNaN(v));
-      return values;
+    function parseSeries(text) {
+      return text.trim().split(/[\s,]+/).filter(x => x.length > 0).map(Number).filter(n => !Number.isNaN(n));
     }
 
     function computeStats() {
-      const dataText = document.getElementById('statsData').value;
-      const out = document.getElementById('statsOutput');
-      const vals = parseDataSeries(dataText);
-      if (!vals.length) {
-        out.textContent = 'No data.';
+      const dataEl = document.getElementById('statsData');
+      const outEl = document.getElementById('statsOutput');
+      if (!dataEl || !outEl) return;
+
+      const xs = parseSeries(dataEl.value);
+      if (xs.length === 0) {
+        outEl.textContent = 'No data.';
         return;
       }
-      try {
-        const n = vals.length;
-        const mean = math.mean(vals);
-        const min = math.min(vals);
-        const max = math.max(vals);
-        const variance = math.variance(vals);
-        const std = math.std(vals);
-        const median = math.median(vals);
-        const sum = math.sum(vals);
-        out.textContent =
-          'n       = ' + n + '\n' +
-          'sum     = ' + sum + '\n' +
-          'mean    = ' + mean + '\n' +
-          'median  = ' + median + '\n' +
-          'min     = ' + min + '\n' +
-          'max     = ' + max + '\n' +
-          'variance= ' + variance + '\n' +
-          'std dev = ' + std;
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
-      }
+
+      const n = xs.length;
+      const mean = xs.reduce((a,b)=>a+b,0) / n;
+      const sorted = [...xs].sort((a,b)=>a-b);
+      const median = (n % 2 === 1) ? sorted[(n-1)/2] : (sorted[n/2 -1] + sorted[n/2]) / 2;
+      const min = sorted[0];
+      const max = sorted[n-1];
+      const variance = xs.reduce((s,v)=>s+(v-mean)*(v-mean),0) / n;
+      const std = Math.sqrt(variance);
+
+      outEl.textContent =
+        `n = ${n}\n` +
+        `mean = ${formatConsoleResult(mean)}\n` +
+        `median = ${formatConsoleResult(median)}\n` +
+        `min = ${formatConsoleResult(min)}\n` +
+        `max = ${formatConsoleResult(max)}\n` +
+        `std = ${formatConsoleResult(std)}\n`;
+
+      setStatus('Stats computed.');
     }
 
     function clearStats() {
       const dataEl = document.getElementById('statsData');
-      const out = document.getElementById('statsOutput');
+      const outEl = document.getElementById('statsOutput');
       if (dataEl) dataEl.value = '';
-      if (out) out.textContent = 'Paste data and hit "Compute stats".';
+      if (outEl) outEl.textContent = 'Paste data and hit "Compute stats".';
+      setStatus('Stats cleared.');
     }
 
     // =========================
@@ -1336,8 +1313,8 @@ Enter A and B, then choose an operation.</pre>
     // =========================
     let dataChart = null;
 
-    function parseLabelValueData(text) {
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    function parseLabelValuePairs(text) {
+      const lines = text.trim().split('\n').filter(l => l.trim().length > 0);
       const labels = [];
       const values = [];
       for (const line of lines) {
@@ -1345,9 +1322,10 @@ Enter A and B, then choose an operation.</pre>
         if (parts.length < 2) continue;
         const label = parts[0].trim();
         const value = parseFloat(parts.slice(1).join(',').trim());
-        if (!label || Number.isNaN(value)) continue;
-        labels.push(label);
-        values.push(value);
+        if (label && isFinite(value)) {
+          labels.push(label);
+          values.push(value);
+        }
       }
       return { labels, values };
     }
@@ -1355,27 +1333,24 @@ Enter A and B, then choose an operation.</pre>
     function plotDataChart() {
       const inputEl = document.getElementById('dataInput');
       const typeEl = document.getElementById('dataChartType');
-      if (!inputEl || !typeEl) return;
+      const canvas = document.getElementById('dataCanvas');
+      if (!inputEl || !typeEl || !canvas) return;
 
-      const { labels, values } = parseLabelValueData(inputEl.value);
-      if (!labels.length) {
-        setStatus('No valid label/value data for Data Viz.');
+      const { labels, values } = parseLabelValuePairs(inputEl.value);
+      if (labels.length === 0) {
+        setStatus('No data for chart.');
         return;
       }
 
-      const chartType = typeEl.value || 'bar';
-      const canvas = document.getElementById('dataCanvas');
-      if (!canvas) return;
       const ctx = canvas.getContext('2d');
-
       if (dataChart) dataChart.destroy();
 
-      const config = {
-        type: chartType,
+      dataChart = new Chart(ctx, {
+        type: typeEl.value,
         data: {
           labels,
           datasets: [{
-            label: 'Data',
+            label: 'Dataset',
             data: values,
             borderWidth: 1.5
           }]
@@ -1384,662 +1359,357 @@ Enter A and B, then choose an operation.</pre>
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { labels: { color: '#e5e7eb' } }
+            legend: { labels: { color: '#cbd5e1' } }
+          },
+          scales: (typeEl.value === 'pie' || typeEl.value === 'doughnut' || typeEl.value === 'polarArea' || typeEl.value === 'radar') ? {} : {
+            x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(55,65,81,0.4)' } },
+            y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(55,65,81,0.4)' } }
           }
         }
-      };
+      });
 
-      if (chartType === 'bar' || chartType === 'line') {
-        config.options.scales = {
-          x: {
-            ticks: { color: '#9ca3af' },
-            grid: { color: 'rgba(55,65,81,0.4)' }
-          },
-          y: {
-            ticks: { color: '#9ca3af' },
-            grid: { color: 'rgba(55,65,81,0.4)' }
-          }
-        };
-      }
-
-      dataChart = new Chart(ctx, config);
-      setStatus('Rendered data chart (' + chartType + ').');
+      setStatus('Chart plotted.');
     }
 
     function clearDataChart() {
-      const inputEl = document.getElementById('dataInput');
-      if (inputEl) inputEl.value = '';
+      const canvas = document.getElementById('dataCanvas');
+      if (!canvas) return;
       if (dataChart) {
         dataChart.destroy();
         dataChart = null;
       }
-      setStatus('Cleared data chart.');
+      setStatus('Chart cleared.');
     }
 
     // =========================
-    // Geometry (2D & 3D)
+    // Geometry helpers
     // =========================
     function updateGeom2DFields() {
-      const shapeEl = document.getElementById('geom2dShape');
-      if (!shapeEl) return;
-      const shape = shapeEl.value;
+      const shape = document.getElementById('geom2dShape').value;
+      const p1l = document.getElementById('geom2dP1Label');
+      const p2l = document.getElementById('geom2dP2Label');
+      const p3l = document.getElementById('geom2dP3Label');
+      const g2 = document.getElementById('geom2dP2Group');
+      const g3 = document.getElementById('geom2dP3Group');
 
-      const p1Group = document.getElementById('geom2dP1Group');
-      const p2Group = document.getElementById('geom2dP2Group');
-      const p3Group = document.getElementById('geom2dP3Group');
-      const p1Label = document.getElementById('geom2dP1Label');
-      const p2Label = document.getElementById('geom2dP2Label');
-      const p3Label = document.getElementById('geom2dP3Label');
-
-      if (!p1Group || !p2Group || !p3Group || !p1Label || !p2Label || !p3Label) return;
-
-      // Default: hide all, then enable per-shape
-      p1Group.classList.remove('hidden');
-      p2Group.classList.add('hidden');
-      p3Group.classList.add('hidden');
+      g2.style.display = 'block';
+      g3.style.display = 'block';
 
       if (shape === 'circle') {
-        p1Label.textContent = 'Radius r';
+        p1l.textContent = 'Radius';
+        g2.style.display = 'none';
+        g3.style.display = 'none';
       } else if (shape === 'rectangle') {
-        p1Label.textContent = 'Width w';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
+        p1l.textContent = 'Width';
+        p2l.textContent = 'Height';
+        g3.style.display = 'none';
       } else if (shape === 'triangle-bh') {
-        p1Label.textContent = 'Base b';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
+        p1l.textContent = 'Base';
+        p2l.textContent = 'Height';
+        g3.style.display = 'none';
       } else if (shape === 'triangle-sss') {
-        p1Label.textContent = 'Side a';
-        p2Label.textContent = 'Side b';
-        p3Label.textContent = 'Side c';
-        p2Group.classList.remove('hidden');
-        p3Group.classList.remove('hidden');
+        p1l.textContent = 'Side a';
+        p2l.textContent = 'Side b';
+        p3l.textContent = 'Side c';
       } else if (shape === 'trapezoid') {
-        p1Label.textContent = 'Base a';
-        p2Label.textContent = 'Base b';
-        p3Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-        p3Group.classList.remove('hidden');
+        p1l.textContent = 'Base a';
+        p2l.textContent = 'Base b';
+        p3l.textContent = 'Height';
       } else if (shape === 'regular-polygon') {
-        p1Label.textContent = 'Number of sides n';
-        p2Label.textContent = 'Side length s';
-        p2Group.classList.remove('hidden');
+        p1l.textContent = 'n (sides)';
+        p2l.textContent = 'Side length';
+        g3.style.display = 'none';
+      }
+    }
+
+    function updateGeom3DFields() {
+      const shape = document.getElementById('geom3dShape').value;
+      const p1l = document.getElementById('geom3dP1Label');
+      const p2l = document.getElementById('geom3dP2Label');
+      const p3l = document.getElementById('geom3dP3Label');
+      const g2 = document.getElementById('geom3dP2Group');
+      const g3 = document.getElementById('geom3dP3Group');
+
+      g2.style.display = 'block';
+      g3.style.display = 'block';
+
+      if (shape === 'box') {
+        p1l.textContent = 'Width';
+        p2l.textContent = 'Height';
+        p3l.textContent = 'Depth';
+      } else if (shape === 'sphere') {
+        p1l.textContent = 'Radius';
+        g2.style.display = 'none';
+        g3.style.display = 'none';
+      } else if (shape === 'cylinder') {
+        p1l.textContent = 'Radius';
+        p2l.textContent = 'Height';
+        g3.style.display = 'none';
+      } else if (shape === 'cone') {
+        p1l.textContent = 'Radius';
+        p2l.textContent = 'Height';
+        g3.style.display = 'none';
       }
     }
 
     function computeGeom2D() {
-      const shapeEl = document.getElementById('geom2dShape');
-      const outEl = document.getElementById('geom2dOutput');
-      const p1El = document.getElementById('geom2dP1');
-      const p2El = document.getElementById('geom2dP2');
-      const p3El = document.getElementById('geom2dP3');
-      if (!shapeEl || !outEl || !p1El || !p2El || !p3El) return;
+      const shape = document.getElementById('geom2dShape').value;
+      const p1 = parseFloat(document.getElementById('geom2dP1').value);
+      const p2 = parseFloat(document.getElementById('geom2dP2').value);
+      const p3 = parseFloat(document.getElementById('geom2dP3').value);
+      const out = document.getElementById('geom2dOutput');
 
-      const shape = shapeEl.value;
-      const p1 = parseFloat(p1El.value);
-      const p2 = parseFloat(p2El.value);
-      const p3 = parseFloat(p3El.value);
+      try {
+        let area = 0, perim = 0;
 
-      function invalid(msg) {
-        outEl.textContent = msg;
-        setStatus('Geometry 2D: ' + msg);
+        if (shape === 'circle') {
+          area = Math.PI * p1 * p1;
+          perim = 2 * Math.PI * p1;
+        } else if (shape === 'rectangle') {
+          area = p1 * p2;
+          perim = 2 * (p1 + p2);
+        } else if (shape === 'triangle-bh') {
+          area = 0.5 * p1 * p2;
+          perim = NaN;
+        } else if (shape === 'triangle-sss') {
+          const s = (p1 + p2 + p3) / 2;
+          area = Math.sqrt(s * (s - p1) * (s - p2) * (s - p3));
+          perim = p1 + p2 + p3;
+        } else if (shape === 'trapezoid') {
+          area = 0.5 * (p1 + p2) * p3;
+          perim = NaN;
+        } else if (shape === 'regular-polygon') {
+          const n = Math.round(p1);
+          const side = p2;
+          perim = n * side;
+          area = (n * side * side) / (4 * Math.tan(Math.PI / n));
+        }
+
+        out.textContent =
+          `Area = ${formatConsoleResult(area)}\n` +
+          `Perimeter = ${isFinite(perim) ? formatConsoleResult(perim) : 'n/a (needs more info)'}`;
+
+        setStatus('Geometry 2D computed.');
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+        setStatus('Geometry error.');
       }
-
-      let area = null;
-      let perimeter = null;
-      let extra = [];
-
-      if (shape === 'circle') {
-        if (!isFinite(p1) || p1 <= 0) return invalid('Radius must be a positive number.');
-        const r = p1;
-        area = Math.PI * r * r;
-        perimeter = 2 * Math.PI * r;
-        extra.push('r = ' + r);
-      } else if (shape === 'rectangle') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Width and height must be positive.');
-        }
-        const w = p1, h = p2;
-        area = w * h;
-        perimeter = 2 * (w + h);
-        extra.push('w = ' + w);
-        extra.push('h = ' + h);
-      } else if (shape === 'triangle-bh') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Base and height must be positive.');
-        }
-        const b = p1, h = p2;
-        area = 0.5 * b * h;
-        perimeter = null; // cannot determine from b & h alone
-        extra.push('b = ' + b);
-        extra.push('h = ' + h);
-      } else if (shape === 'triangle-sss') {
-        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
-          return invalid('All sides must be positive.');
-        }
-        const a = p1, b = p2, c = p3;
-        if (a + b <= c || a + c <= b || b + c <= a) {
-          return invalid('Triangle inequality violated (a + b > c, etc.).');
-        }
-        const s = (a + b + c) / 2;
-        area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
-        perimeter = a + b + c;
-        extra.push('a = ' + a);
-        extra.push('b = ' + b);
-        extra.push('c = ' + c);
-        extra.push('s (semiperimeter) = ' + s);
-      } else if (shape === 'trapezoid') {
-        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
-          return invalid('Bases and height must be positive.');
-        }
-        const a = p1, b = p2, h = p3;
-        area = 0.5 * (a + b) * h;
-        perimeter = null; // legs unknown
-        extra.push('base a = ' + a);
-        extra.push('base b = ' + b);
-        extra.push('h = ' + h);
-      } else if (shape === 'regular-polygon') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 2 || p2 <= 0) {
-          return invalid('n must be > 2 and side length > 0.');
-        }
-        const n = p1;
-        const s = p2;
-        const perimeterVal = n * s;
-        const areaVal = (n * s * s) / (4 * Math.tan(Math.PI / n));
-        area = areaVal;
-        perimeter = perimeterVal;
-        extra.push('n = ' + n);
-        extra.push('s = ' + s);
-      } else {
-        return invalid('Unknown shape.');
-      }
-
-      const lines = [];
-      lines.push('Shape: ' + shapeEl.options[shapeEl.selectedIndex].text);
-      if (extra.length) lines.push(extra.join(', '));
-
-      if (area != null) {
-        lines.push('Area ≈ ' + area);
-      }
-      if (perimeter != null) {
-        lines.push('Perimeter ≈ ' + perimeter);
-      } else {
-        lines.push('Perimeter: N/A for this parameterization.');
-      }
-
-      outEl.textContent = lines.join('\n');
-      setStatus('Geometry 2D: computed for ' + shape + '.');
     }
 
     function clearGeom2D() {
-      const p1El = document.getElementById('geom2dP1');
-      const p2El = document.getElementById('geom2dP2');
-      const p3El = document.getElementById('geom2dP3');
-      const outEl = document.getElementById('geom2dOutput');
-      if (p1El) p1El.value = '';
-      if (p2El) p2El.value = '';
-      if (p3El) p3El.value = '';
-      if (outEl) {
-        outEl.textContent = 'Select a shape, fill parameters, then hit "Compute 2D".';
-      }
-      setStatus('Geometry 2D: cleared.');
-    }
-
-    function updateGeom3DFields() {
-      const shapeEl = document.getElementById('geom3dShape');
-      if (!shapeEl) return;
-      const shape = shapeEl.value;
-
-      const p1Group = document.getElementById('geom3dP1Group');
-      const p2Group = document.getElementById('geom3dP2Group');
-      const p3Group = document.getElementById('geom3dP3Group');
-      const p1Label = document.getElementById('geom3dP1Label');
-      const p2Label = document.getElementById('geom3dP2Label');
-      const p3Label = document.getElementById('geom3dP3Label');
-
-      if (!p1Group || !p2Group || !p3Group || !p1Label || !p2Label || !p3Label) return;
-
-      p1Group.classList.remove('hidden');
-      p2Group.classList.add('hidden');
-      p3Group.classList.add('hidden');
-
-      if (shape === 'box') {
-        p1Label.textContent = 'Width w';
-        p2Label.textContent = 'Height h';
-        p3Label.textContent = 'Depth d';
-        p2Group.classList.remove('hidden');
-        p3Group.classList.remove('hidden');
-      } else if (shape === 'sphere') {
-        p1Label.textContent = 'Radius r';
-      } else if (shape === 'cylinder') {
-        p1Label.textContent = 'Radius r';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-      } else if (shape === 'cone') {
-        p1Label.textContent = 'Radius r';
-        p2Label.textContent = 'Height h';
-        p2Group.classList.remove('hidden');
-      }
+      document.getElementById('geom2dP1').value = '';
+      document.getElementById('geom2dP2').value = '';
+      document.getElementById('geom2dP3').value = '';
+      document.getElementById('geom2dOutput').textContent = 'Select a shape, fill parameters, then hit "Compute 2D".';
+      setStatus('Geometry 2D cleared.');
     }
 
     function computeGeom3D() {
-      const shapeEl = document.getElementById('geom3dShape');
-      const outEl = document.getElementById('geom3dOutput');
-      const p1El = document.getElementById('geom3dP1');
-      const p2El = document.getElementById('geom3dP2');
-      const p3El = document.getElementById('geom3dP3');
-      if (!shapeEl || !outEl || !p1El || !p2El || !p3El) return;
+      const shape = document.getElementById('geom3dShape').value;
+      const p1 = parseFloat(document.getElementById('geom3dP1').value);
+      const p2 = parseFloat(document.getElementById('geom3dP2').value);
+      const p3 = parseFloat(document.getElementById('geom3dP3').value);
+      const out = document.getElementById('geom3dOutput');
 
-      const shape = shapeEl.value;
-      const p1 = parseFloat(p1El.value);
-      const p2 = parseFloat(p2El.value);
-      const p3 = parseFloat(p3El.value);
+      try {
+        let sa = 0, vol = 0;
 
-      function invalid(msg) {
-        outEl.textContent = msg;
-        setStatus('Geometry 3D: ' + msg);
-      }
-
-      let surface = null;
-      let volume = null;
-      const extra = [];
-
-      if (shape === 'box') {
-        if (!isFinite(p1) || !isFinite(p2) || !isFinite(p3) || p1 <= 0 || p2 <= 0 || p3 <= 0) {
-          return invalid('Width, height, and depth must be positive.');
+        if (shape === 'box') {
+          const w = p1, h = p2, d = p3;
+          sa = 2 * (w*h + w*d + h*d);
+          vol = w * h * d;
+        } else if (shape === 'sphere') {
+          const r = p1;
+          sa = 4 * Math.PI * r * r;
+          vol = (4/3) * Math.PI * r * r * r;
+        } else if (shape === 'cylinder') {
+          const r = p1, h = p2;
+          sa = 2 * Math.PI * r * (r + h);
+          vol = Math.PI * r * r * h;
+        } else if (shape === 'cone') {
+          const r = p1, h = p2;
+          const l = Math.sqrt(r*r + h*h);
+          sa = Math.PI * r * (r + l);
+          vol = (1/3) * Math.PI * r * r * h;
         }
-        const w = p1, h = p2, d = p3;
-        surface = 2 * (w * h + w * d + h * d);
-        volume = w * h * d;
-        extra.push('w = ' + w);
-        extra.push('h = ' + h);
-        extra.push('d = ' + d);
-      } else if (shape === 'sphere') {
-        if (!isFinite(p1) || p1 <= 0) return invalid('Radius must be positive.');
-        const r = p1;
-        surface = 4 * Math.PI * r * r;
-        volume = (4 / 3) * Math.PI * r * r * r;
-        extra.push('r = ' + r);
-      } else if (shape === 'cylinder') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Radius and height must be positive.');
-        }
-        const r = p1, h = p2;
-        const baseArea = Math.PI * r * r;
-        const lateral = 2 * Math.PI * r * h;
-        surface = 2 * baseArea + lateral;
-        volume = baseArea * h;
-        extra.push('r = ' + r);
-        extra.push('h = ' + h);
-      } else if (shape === 'cone') {
-        if (!isFinite(p1) || !isFinite(p2) || p1 <= 0 || p2 <= 0) {
-          return invalid('Radius and height must be positive.');
-        }
-        const r = p1, h = p2;
-        const slant = Math.sqrt(r * r + h * h);
-        const baseArea = Math.PI * r * r;
-        const lateral = Math.PI * r * slant;
-        surface = baseArea + lateral;
-        volume = (1 / 3) * baseArea * h;
-        extra.push('r = ' + r);
-        extra.push('h = ' + h);
-        extra.push('slant ≈ ' + slant);
-      } else {
-        return invalid('Unknown solid.');
-      }
 
-      const lines = [];
-      lines.push('Solid: ' + shapeEl.options[shapeEl.selectedIndex].text);
-      if (extra.length) lines.push(extra.join(', '));
+        out.textContent =
+          `Surface area = ${formatConsoleResult(sa)}\n` +
+          `Volume = ${formatConsoleResult(vol)}`;
 
-      if (surface != null) {
-        lines.push('Surface area ≈ ' + surface);
+        setStatus('Geometry 3D computed.');
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+        setStatus('Geometry error.');
       }
-      if (volume != null) {
-        lines.push('Volume ≈ ' + volume);
-      }
-
-      outEl.textContent = lines.join('\n');
-      setStatus('Geometry 3D: computed for ' + shape + '.');
     }
 
     function clearGeom3D() {
-      const p1El = document.getElementById('geom3dP1');
-      const p2El = document.getElementById('geom3dP2');
-      const p3El = document.getElementById('geom3dP3');
-      const outEl = document.getElementById('geom3dOutput');
-      if (p1El) p1El.value = '';
-      if (p2El) p2El.value = '';
-      if (p3El) p3El.value = '';
-      if (outEl) {
-        outEl.textContent = 'Select a solid, fill parameters, then hit "Compute 3D".';
-      }
-      setStatus('Geometry 3D: cleared.');
+      document.getElementById('geom3dP1').value = '';
+      document.getElementById('geom3dP2').value = '';
+      document.getElementById('geom3dP3').value = '';
+      document.getElementById('geom3dOutput').textContent = 'Select a solid, fill parameters, then hit "Compute 3D".';
+      setStatus('Geometry 3D cleared.');
     }
 
     // =========================
-    // Programmer (base + bitwise)
+    // Solve tools (numeric)
     // =========================
-    function programmerSyncFrom(source) {
+    function solveDerivative() {
+      const expr = document.getElementById('solveDerivExpr').value.trim();
+      const x0 = parseFloat(document.getElementById('solveDerivX0').value);
+      const out = document.getElementById('solveDerivOutput');
+      if (!expr || !isFinite(x0)) {
+        out.textContent = 'Provide f(x) and x₀.';
+        return;
+      }
+
+      try {
+        const h = 1e-6;
+        const f1 = math.evaluate(expr, { x: x0 + h, ans, mem: memory, memory });
+        const f0 = math.evaluate(expr, { x: x0 - h, ans, mem: memory, memory });
+        const deriv = (f1 - f0) / (2*h);
+        out.textContent = `f'(x₀) ≈ ${formatConsoleResult(deriv)}`;
+        setStatus('Derivative computed.');
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+        setStatus('Solve error.');
+      }
+    }
+
+    function loadExprIntoDeriv() {
+      const el = document.getElementById('solveDerivExpr');
+      if (el) el.value = expression || display || "";
+    }
+
+    function solveIntegral() {
+      const expr = document.getElementById('solveIntExpr').value.trim();
+      const a = parseFloat(document.getElementById('solveIntA').value);
+      const b = parseFloat(document.getElementById('solveIntB').value);
+      const out = document.getElementById('solveIntOutput');
+
+      if (!expr || !isFinite(a) || !isFinite(b) || a >= b) {
+        out.textContent = 'Provide f(x) and a<b.';
+        return;
+      }
+
+      try {
+        const n = 2000;
+        const dx = (b - a) / n;
+        let sum = 0;
+        for (let i = 0; i <= n; i++) {
+          const x = a + i * dx;
+          const fx = math.evaluate(expr, { x, ans, mem: memory, memory });
+          const w = (i === 0 || i === n) ? 0.5 : 1.0;
+          sum += w * fx;
+        }
+        const integral = sum * dx;
+        out.textContent = `∫ f(x) dx ≈ ${formatConsoleResult(integral)}`;
+        setStatus('Integral computed.');
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+        setStatus('Solve error.');
+      }
+    }
+
+    function loadExprIntoIntegral() {
+      const el = document.getElementById('solveIntExpr');
+      if (el) el.value = expression || display || "";
+    }
+
+    function solveRoot() {
+      const expr = document.getElementById('solveRootExpr').value.trim();
+      let x = parseFloat(document.getElementById('solveRootGuess').value);
+      const out = document.getElementById('solveRootOutput');
+
+      if (!expr || !isFinite(x)) {
+        out.textContent = 'Provide f(x) and initial x₀.';
+        return;
+      }
+
+      try {
+        const maxIter = 30;
+        const eps = 1e-10;
+        const h = 1e-6;
+        const log = [];
+        for (let i = 0; i < maxIter; i++) {
+          const fx = math.evaluate(expr, { x, ans, mem: memory, memory });
+          const dfx = (math.evaluate(expr, { x: x + h, ans, mem: memory, memory }) - math.evaluate(expr, { x: x - h, ans, mem: memory, memory })) / (2*h);
+          log.push(`iter ${i}: x=${x}  f(x)=${fx}  f'(x)=${dfx}`);
+          if (Math.abs(fx) < eps) break;
+          if (Math.abs(dfx) < 1e-14) break;
+          x = x - fx / dfx;
+        }
+        out.textContent = log.join('\n') + `\n\nroot ≈ ${formatConsoleResult(x)}`;
+        setStatus('Root solved.');
+      } catch (err) {
+        out.textContent = 'Error: ' + err.message;
+        setStatus('Solve error.');
+      }
+    }
+
+    function loadExprIntoRoot() {
+      const el = document.getElementById('solveRootExpr');
+      if (el) el.value = expression || display || "";
+    }
+
+    // =========================
+    // Programmer / Bitwise
+    // =========================
+    function programmerSyncFrom(which) {
       const decEl = document.getElementById('progDec');
       const binEl = document.getElementById('progBin');
       const hexEl = document.getElementById('progHex');
       const octEl = document.getElementById('progOct');
-      if (!decEl || !binEl || !hexEl || !octEl) return;
 
-      let raw = '';
-      let radix = 10;
-
-      if (source === 'dec') {
-        raw = decEl.value;
-        radix = 10;
-      } else if (source === 'bin') {
-        raw = binEl.value;
-        radix = 2;
-      } else if (source === 'hex') {
-        raw = hexEl.value;
-        radix = 16;
-      } else if (source === 'oct') {
-        raw = octEl.value;
-        radix = 8;
-      } else {
-        return;
+      function setAll(dec) {
+        const n = (dec | 0) >>> 0;
+        decEl.value = String(n);
+        binEl.value = n.toString(2);
+        hexEl.value = n.toString(16).toUpperCase();
+        octEl.value = n.toString(8);
       }
 
-      let text = (raw || '').trim();
-      if (!text) {
-        // If the active field is cleared, just clear the others.
-        if (source !== 'dec') decEl.value = '';
-        if (source !== 'bin') binEl.value = '';
-        if (source !== 'hex') hexEl.value = '';
-        if (source !== 'oct') octEl.value = '';
-        return;
+      try {
+        if (which === 'dec') {
+          const v = parseInt(decEl.value, 10);
+          if (isFinite(v)) setAll(v);
+        } else if (which === 'bin') {
+          const v = parseInt(binEl.value, 2);
+          if (isFinite(v)) setAll(v);
+        } else if (which === 'hex') {
+          const v = parseInt(hexEl.value, 16);
+          if (isFinite(v)) setAll(v);
+        } else if (which === 'oct') {
+          const v = parseInt(octEl.value, 8);
+          if (isFinite(v)) setAll(v);
+        }
+        setStatus('Programmer sync.');
+      } catch (e) {
+        setStatus('Programmer input error.');
       }
-
-      // Strip common base prefixes so users can type 0b, 0x, 0o.
-      if (radix === 2) text = text.replace(/^0b/i, '');
-      if (radix === 16) text = text.replace(/^0x/i, '');
-      if (radix === 8) text = text.replace(/^0o/i, '');
-
-      const dec = parseInt(text, radix);
-      if (Number.isNaN(dec)) {
-        setStatus('Programmer: invalid ' + source.toUpperCase() + ' value.');
-        return;
-      }
-
-      decEl.value = dec.toString(10);
-      binEl.value = dec.toString(2);
-      hexEl.value = dec.toString(16).toUpperCase();
-      octEl.value = dec.toString(8);
-
-      setStatus('Programmer: base conversion updated from ' + source.toUpperCase() + '.');
     }
 
     function programmerRunBitwise(op) {
-      const aEl = document.getElementById('progBitA');
-      const bEl = document.getElementById('progBitB');
-      const outEl = document.getElementById('progBitResult');
-      if (!aEl || !bEl || !outEl) return;
+      const a = parseInt(document.getElementById('progBitA').value, 10) | 0;
+      const b = parseInt(document.getElementById('progBitB').value, 10) | 0;
+      const out = document.getElementById('progBitResult');
+      let r = 0;
 
-      const aText = (aEl.value || '').trim();
-      const bText = (bEl.value || '').trim();
+      if (op === 'and') r = a & b;
+      else if (op === 'or') r = a | b;
+      else if (op === 'xor') r = a ^ b;
+      else if (op === 'not') r = ~a;
+      else if (op === 'shl') r = a << (b & 31);
+      else if (op === 'shr') r = a >> (b & 31);
 
-      if (!aText) {
-        outEl.textContent = 'Enter operand A.';
-        setStatus('Programmer: operand A required.');
-        return;
-      }
+      out.textContent =
+        `A = ${a}\nB = ${b}\n\n` +
+        `Result = ${r}\n` +
+        `Binary = ${(r >>> 0).toString(2)}\n` +
+        `Hex = ${(r >>> 0).toString(16).toUpperCase()}`;
 
-      const a = parseInt(aText, 10);
-      if (Number.isNaN(a)) {
-        outEl.textContent = 'Operand A is not a valid integer.';
-        setStatus('Programmer: invalid operand A.');
-        return;
-      }
-
-      let b = 0;
-      if (op !== 'not') {
-        if (!bText) {
-          outEl.textContent = 'Enter operand B.';
-          setStatus('Programmer: operand B required.');
-          return;
-        }
-        b = parseInt(bText, 10);
-        if (Number.isNaN(b)) {
-          outEl.textContent = 'Operand B is not a valid integer.';
-          setStatus('Programmer: invalid operand B.');
-          return;
-        }
-      }
-
-      let result;
-      let label;
-      switch (op) {
-        case 'and':
-          result = a & b;
-          label = 'A AND B';
-          break;
-        case 'or':
-          result = a | b;
-          label = 'A OR B';
-          break;
-        case 'xor':
-          result = a ^ b;
-          label = 'A XOR B';
-          break;
-        case 'not':
-          result = ~a;
-          label = 'NOT A';
-          break;
-        case 'shl':
-          result = a << b;
-          label = 'A << B';
-          break;
-        case 'shr':
-          result = a >> b;
-          label = 'A >> B';
-          break;
-        default:
-          return;
-      }
-
-      // Display as signed decimal, plus 32-bit unsigned hex/bin.
-      const unsigned = result >>> 0;
-      const hex = '0x' + unsigned.toString(16).toUpperCase();
-      const bin = unsigned.toString(2);
-
-      const lines = [];
-      lines.push('Operation: ' + label);
-      lines.push('A (dec) = ' + a);
-      if (op !== 'not') {
-        lines.push('B (dec) = ' + b);
-      }
-      lines.push('Result (dec) = ' + result);
-      lines.push('Result (hex, 32-bit) = ' + hex);
-      lines.push('Result (bin, 32-bit) = ' + bin);
-
-      outEl.textContent = lines.join('\n');
-      setStatus('Programmer: ' + label + ' computed.');
-    }
-
-    // =========================
-    // Solve tools
-    // =========================
-    function loadExprIntoDeriv() {
-      const el = document.getElementById('solveDerivExpr');
-      if (el) el.value = expression || display || "0";
-    }
-    function loadExprIntoIntegral() {
-      const el = document.getElementById('solveIntExpr');
-      if (el) el.value = expression || display || "0";
-    }
-    function loadExprIntoRoot() {
-      const el = document.getElementById('solveRootExpr');
-      if (el) el.value = expression || display || "0";
-    }
-
-    function solveDerivative() {
-      const exprEl = document.getElementById('solveDerivExpr');
-      const x0El = document.getElementById('solveDerivX0');
-      const outEl = document.getElementById('solveDerivOutput');
-      if (!exprEl || !x0El || !outEl) return;
-
-      const expr = exprEl.value.trim();
-      if (!expr) {
-        outEl.textContent = 'No expression.';
-        return;
-      }
-      const x0 = parseFloat(x0El.value);
-      if (!isFinite(x0)) {
-        outEl.textContent = 'Invalid x₀.';
-        return;
-      }
-
-      const h = 1e-5;
-      try {
-        const scope1 = { x: x0 + h, ans, mem: memory, memory };
-        const scope2 = { x: x0 - h, ans, mem: memory, memory };
-        const f1 = math.evaluate(expr, scope1);
-        const f2 = math.evaluate(expr, scope2);
-        const d = (f1 - f2) / (2 * h);
-
-        outEl.textContent =
-          'f(x) = ' + expr + '\n' +
-          'x₀   = ' + x0 + '\n' +
-          "h    = " + h + '\n\n' +
-          'f(x₀ + h) ≈ ' + f1 + '\n' +
-          'f(x₀ - h) ≈ ' + f2 + '\n\n' +
-          "f'(x₀) ≈ " + d;
-      } catch (e) {
-        outEl.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function solveIntegral() {
-      const exprEl = document.getElementById('solveIntExpr');
-      const aEl = document.getElementById('solveIntA');
-      const bEl = document.getElementById('solveIntB');
-      const outEl = document.getElementById('solveIntOutput');
-      if (!exprEl || !aEl || !bEl || !outEl) return;
-
-      const expr = exprEl.value.trim();
-      if (!expr) {
-        outEl.textContent = 'No expression.';
-        return;
-      }
-      const a = parseFloat(aEl.value);
-      const b = parseFloat(bEl.value);
-      if (!isFinite(a) || !isFinite(b) || a === b) {
-        outEl.textContent = 'Invalid interval [a, b].';
-        return;
-      }
-
-      const n = 400; // even
-      const h = (b - a) / n;
-      let sum = 0;
-      try {
-        for (let i = 0; i <= n; i++) {
-          const x = a + i * h;
-          const scope = { x, ans, mem: memory, memory };
-          const fx = math.evaluate(expr, scope);
-          const coeff = (i === 0 || i === n) ? 1 : (i % 2 === 0 ? 2 : 4);
-          sum += coeff * fx;
-        }
-        const integral = (h / 3) * sum;
-        outEl.textContent =
-          'Integral of f(x) = ' + expr + '\n' +
-          'over [' + a + ', ' + b + '] (Simpson, n=' + n + '):\n\n' +
-          '≈ ' + integral;
-      } catch (e) {
-        outEl.textContent = 'Error: ' + e.message;
-      }
-    }
-
-    function solveRoot() {
-      const exprEl = document.getElementById('solveRootExpr');
-      const guessEl = document.getElementById('solveRootGuess');
-      const outEl = document.getElementById('solveRootOutput');
-      if (!exprEl || !guessEl || !outEl) return;
-
-      const expr = exprEl.value.trim();
-      if (!expr) {
-        outEl.textContent = 'No expression.';
-        return;
-      }
-      let x = parseFloat(guessEl.value);
-      if (!isFinite(x)) {
-        outEl.textContent = 'Invalid initial guess.';
-        return;
-      }
-
-      const maxIter = 30;
-      const tol = 1e-8;
-      const h = 1e-5;
-      const lines = [];
-      lines.push('f(x) = ' + expr);
-      lines.push('x₀   = ' + x);
-      lines.push('max iterations = ' + maxIter);
-      lines.push('tolerance      = ' + tol);
-      lines.push('');
-
-      try {
-        for (let i = 0; i < maxIter; i++) {
-          const scope = { x, ans, mem: memory, memory };
-          const fx = math.evaluate(expr, scope);
-
-          const scope1 = { x: x + h, ans, mem: memory, memory };
-          const scope2 = { x: x - h, ans, mem: memory, memory };
-          const f1 = math.evaluate(expr, scope1);
-          const f2 = math.evaluate(expr, scope2);
-          const dfdx = (f1 - f2) / (2 * h);
-
-          lines.push(
-            'Iter ' + i +
-            ': x = ' + x +
-            ', f(x) = ' + fx +
-            ', f\'(x) ≈ ' + dfdx
-          );
-
-          if (Math.abs(fx) < tol) {
-            lines.push('');
-            lines.push('Converged: |f(x)| < tol');
-            lines.push('Root ≈ ' + x);
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-          if (!isFinite(dfdx) || Math.abs(dfdx) < 1e-12) {
-            lines.push('');
-            lines.push('Derivative too small or invalid, aborting.');
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-
-          const xNext = x - fx / dfdx;
-          if (!isFinite(xNext)) {
-            lines.push('');
-            lines.push('Next x not finite, aborting.');
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-
-          if (Math.abs(xNext - x) < tol) {
-            x = xNext;
-            lines.push('');
-            lines.push('Step below tol, treating as converged.');
-            lines.push('Root ≈ ' + x);
-            outEl.textContent = lines.join('\n');
-            return;
-          }
-
-          x = xNext;
-        }
-
-        lines.push('');
-        lines.push('Max iterations reached. Last x ≈ ' + x);
-        outEl.textContent = lines.join('\n');
-      } catch (e) {
-        outEl.textContent = 'Error during iteration: ' + e.message;
-      }
+      setStatus('Bitwise computed.');
     }
   </script>
 </body>
